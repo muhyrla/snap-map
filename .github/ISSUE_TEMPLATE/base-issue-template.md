@@ -1,0 +1,20 @@
+---
+name: Base Issue Template
+about: Use it in each Issue
+title: "[Задача] "
+labels: ''
+assignees: ''
+
+---
+
+> [!TIP]
+> Инфа о проекте лежит тут: https://github.com/muhyrla/snap-map/wiki/project‐info
+> Если её недостаточно, обращайтесь к @muhyrla
+
+** тут описание задачи ** 
+
+Критерии приемки:
+- [ ] Критерий №1
+- [ ] Критерий №2
+- [ ] Критерий №3
+- [ ] Критерий №4
