@@ -210,7 +210,3 @@ test-bot/database.py
 test-bot/file_manager.py
 test-bot/requirements.txt
 test-bot/to_find.txt
-/backend/.gradle
-backend/gradlew.bat
-/snapmapAPIdocs
-/tools

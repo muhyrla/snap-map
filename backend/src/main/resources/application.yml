@@ -1,9 +1,0 @@
-server:
-  port: 8080
-
-telegram:
-  bot:
-    token: 8138364282:AAHvQBOypEwZB-iVcPybZno_vaVvdkbRHPA
-  init-data:
-    expires-in-seconds: 3600
-
