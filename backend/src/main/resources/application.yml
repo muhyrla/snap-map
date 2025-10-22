@@ -3,7 +3,7 @@ server:
 
 telegram:
   bot:
-    token: 8138364282:AAHvQBOypEwZB-iVcPybZno_vaVvdkbRHPA
+    token: ##
   init-data:
     expires-in-seconds: 3600
 
