@@ -20,19 +20,16 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     
-    // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     
-    // Database (H2 for development, можно заменить на PostgreSQL/MySQL)
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.postgresql:postgresql")
     
-    // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }

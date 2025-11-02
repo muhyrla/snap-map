@@ -3,24 +3,23 @@ spring:
     name: snap-map-backend
   
   datasource:
-    url: jdbc:h2:mem:snapmapdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: 
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snap-map}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
   
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:}
 
 server:
   port: 8080
@@ -35,4 +34,22 @@ logging:
 
 telegram:
   bot-token: ${SNAP_MAP_BOT_TOKEN:}
+
+---
+# Профиль h2 для разработки (опционально)
+spring:
+  config:
+    activate:
+      on-profile: h2
+  datasource:
+    url: jdbc:h2:mem:snapmapdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
 
