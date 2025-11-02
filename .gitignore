@@ -113,3 +113,4 @@ backend/.springBeans
 # H2 Database files
 backend/*.mv.db
 backend/*.trace.db
+telegram-webapp-server.py
