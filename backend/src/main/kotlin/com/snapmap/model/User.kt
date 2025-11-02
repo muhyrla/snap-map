@@ -26,6 +26,10 @@ class User(
     var city: String? = null,
     
     @Column(name = "balance", nullable = false)
-    var balance: BigDecimal = BigDecimal.ZERO
+    var balance: BigDecimal = BigDecimal.ZERO,
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    var role: UserRole = UserRole.USER
 )
 
