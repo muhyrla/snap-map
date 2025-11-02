@@ -33,3 +33,6 @@ logging:
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
 
+telegram:
+  bot-token: ${SNAP_MAP_BOT_TOKEN:}
+
