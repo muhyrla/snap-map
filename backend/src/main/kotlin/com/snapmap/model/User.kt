@@ -28,6 +28,9 @@ class User(
     @Column(name = "balance", nullable = false)
     var balance: BigDecimal = BigDecimal.ZERO,
     
+    @Column(name = "reroll_count", nullable = false)
+    var rerollCount: Int = 0,
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     var role: UserRole = UserRole.USER
