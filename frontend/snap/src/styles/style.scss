@@ -1,0 +1,6 @@
+@use '../styles/variables' as *; // определяет $bg, $text и т.д.
+@use '../styles/base';
+@use '../styles/profile';
+@use '../styles/headline';
+@use '../styles/post';
+@use '../styles/tabbar';

@@ -1,0 +1,8 @@
+@use '../styles/variables' as vars;
+.post {
+  background:  vars.$card; border-radius: vars.$radius; padding: 12px; margin-top: 10px;
+
+  .photo { position: relative; border-radius: 12px; overflow: hidden;
+    img { display: block; width: 100%; height: auto; }
+  }
+}

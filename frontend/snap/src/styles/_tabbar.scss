@@ -1,0 +1,11 @@
+@use '../styles/variables' as vars;
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: vars.$soft; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  box-shadow: 0 -1px 0 rgba(0,0,0,.08);
+
+  &__btn { height: 42px; border: none; border-radius: 12px; background: #f3caca;
+    &--active { background: #eabcbc; }
+  }
+}
