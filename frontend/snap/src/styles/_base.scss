@@ -1,0 +1,16 @@
+@use '../styles/variables' as vars;
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background:  vars.$bg;
+  color:  vars.$text;
+}
+.small { color:  vars.$muted; font-size: 12px; }
+.row { display: flex; align-items: center; }
+.gap10 { gap: 10px; }
+.mt8 { margin-top: 8px; }
+.mt10 { margin-top: 10px; }
+.screen { min-height: 100%; padding: 12px 12px calc(90px + env(safe-area-inset-bottom)); }
+.hr { height: 1px; background: #e6e6e6; margin: 12px 0; }

@@ -1,0 +1,10 @@
+@use '../styles/variables' as vars;
+.profile {
+  display: flex; align-items: center; gap: 10px;
+  background: vars.$card; border-radius: vars.$radius; padding: 10px 12px;
+
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: #ddd; display: grid; place-items: center; }
+  .user { margin-right: auto; }
+  .name { font-weight: 600; }
+  .gear { border: 0; background: transparent; font-size: 18px; line-height: 1; cursor: pointer; }
+}
