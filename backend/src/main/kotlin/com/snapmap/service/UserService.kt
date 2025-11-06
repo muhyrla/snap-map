@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.snapmap.model.User
+import com.snapmap.model.UserRole
 import com.snapmap.repository.UserRepository
 import com.snapmap.security.TelegramInitDataValidator
 import org.springframework.stereotype.Service
@@ -72,7 +73,8 @@ class UserService(
                 tgUsername = telegramUser.username,
                 tgAvatar = telegramUser.photo_url,
                 tgFullname = fullName,
-                balance = BigDecimal.ZERO
+                balance = BigDecimal.ZERO,
+                role = UserRole.USER
             )
             userRepository.save(newUser)
         }
