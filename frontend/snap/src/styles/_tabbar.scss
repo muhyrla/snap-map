@@ -1,11 +1,49 @@
-@use '../styles/variables' as vars;
 .tabbar {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  background: vars.$soft; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-  box-shadow: 0 -1px 0 rgba(0,0,0,.08);
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  height: 56px;
+  background-color: white;
+  border-radius: 28px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-  &__btn { height: 42px; border: none; border-radius: 12px; background: #f3caca;
-    &--active { background: #eabcbc; }
+  .tab-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    filter: invert(55%) sepia(11%) saturate(966%) hue-rotate(177deg) brightness(95%) contrast(86%);
+  }
+
+  .tab-icon.active {
+    filter: invert(39%) sepia(98%) saturate(2578%) hue-rotate(199deg) brightness(101%) contrast(101%);
+  }
+
+  .camera-icon {
+    width: 67px;
+    height: 67px;
+    cursor: pointer;
+  }
+  .camera-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 56px;
+    height: 56px;
+    background-color: #007bff;
+    border-radius: 50%;
+    transform: translateY(-25px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    .camera-icon {
+      width: 32px;
+      height: 32px;
+    }
   }
 }
