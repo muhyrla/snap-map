@@ -26,6 +26,9 @@ dependencies {
     
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    implementation(platform("software.amazon.awssdk:bom:2.25.65"))
+    implementation("software.amazon.awssdk:s3")
     
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
