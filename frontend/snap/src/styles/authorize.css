@@ -1,0 +1,143 @@
+.authorize-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.authorize-container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.authorize-description {
+  text-align: center;
+  margin-top: -8px;
+}
+
+.authorize-description p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.authorize-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.authorize-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.authorize-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.authorize-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.authorize-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.authorize-btn:disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.authorize-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.authorize-debug {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.authorize-btn--telegram {
+  background: linear-gradient(135deg, #0088cc 0%, #0077b5 100%);
+  color: white;
+}
+
+.authorize-btn--telegram:hover {
+  background: linear-gradient(135deg, #0077b5 0%, #0066a3 100%);
+}
+
+.authorize-btn--whatsapp {
+  background: linear-gradient(135deg, #25d366 0%, #20ba5a 100%);
+  color: white;
+}
+
+.authorize-btn--whatsapp:hover {
+  background: linear-gradient(135deg, #20ba5a 0%, #1ba048 100%);
+}
+
+.authorize-btn__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.authorize-btn__text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.authorize-footer {
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.authorize-footer p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .authorize-screen {
+    padding: 16px;
+  }
+
+  .authorize-container {
+    gap: 20px;
+  }
+
+  .authorize-btn {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .authorize-btn__icon {
+    font-size: 22px;
+  }
+}
+
