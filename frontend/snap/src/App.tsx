@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Leaderboard from './pages/Leaderboard';
 import Home from './pages/Home';
-import Authorize from './pages/Authorize';
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -43,9 +42,8 @@ function AppContent() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Authorize />;
-  }
+  // With automatic auth enabled in AuthProvider, we expect isAuthenticated to become true
+  // once init completes. If not authenticated, fall back to Home (no manual authorize page).
 
   return (
     <main className="screen">
