@@ -1,13 +1,27 @@
 import { Header } from '../components/Header';
 import { Headline } from '../components/Headline';
 import { Post } from '../components/Post';
+import Tabbar from '../components/Tabbar';
 import { Tabbar } from '../components/Tabbar';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/style.scss';
 
 export default function Home() {
+  const { user, logout } = useAuth();
+  
+  const displayName = user 
+    ? (user.username || `${user.firstName} ${user.lastName || ''}`.trim() || 'Пользователь')
+    : 'Пользователь';
+
+  const handleSettings = () => {
+    if (window.confirm('Вы действительно хотите выйти?')) {
+      logout();
+    }
+  };
+
   return (
     <main className="screen">
-      <Header username="USERNAME" balance="10.000$" />
+      <Header username={displayName} balance="10.000$" onSettings={handleSettings} />
 
       <Headline
         title="some big text here"
@@ -28,11 +42,12 @@ export default function Home() {
       <div className="hr" />
 
       <Post
-        username="USERNAME"
+        username={displayName}
         text="сфоткал манула нейросеть ебанулась"
         imageUrl="https://images.unsplash.com/photo-1581888227599-779811939232?q=80&w=1080&auto=format&fit=crop"
       />
       <Post username="USERNAME" />
+      <Post username={displayName} />
 
       <Tabbar active="home" />
     </main>
