@@ -114,4 +114,5 @@ backend/.springBeans
 backend/*.mv.db
 backend/*.trace.db
 telegram-webapp-server.py
+/data/seaweed
 /node_modules
