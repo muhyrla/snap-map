@@ -2,7 +2,6 @@ import { Header } from '../components/Header';
 import { Headline } from '../components/Headline';
 import { Post } from '../components/Post';
 import Tabbar from '../components/Tabbar';
-import { Tabbar } from '../components/Tabbar';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/style.scss';
 
