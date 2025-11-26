@@ -35,6 +35,13 @@ logging:
 telegram:
   bot-token: ${SNAP_MAP_BOT_TOKEN:}
 
+s3:
+  endpoint: ${S3_ENDPOINT:http://127.0.0.1:9000}
+  region: ${S3_REGION:us-east-1}
+  accessKey: ${S3_ACCESS_KEY:minioadmin}
+  secretKey: ${S3_SECRET_KEY:minioadmin}
+  bucket: ${S3_BUCKET:snapmap}
+
 ---
 # Профиль h2 для разработки (опционально)
 spring:
