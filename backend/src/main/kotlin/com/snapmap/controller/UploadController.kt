@@ -1,8 +1,10 @@
 package com.snapmap.controller
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.snapmap.model.User
 import com.snapmap.service.StorageService
 import com.snapmap.service.UserService
+import com.snapmap.service.VerificationQueueService
 import jakarta.validation.constraints.NotBlank
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -22,7 +24,8 @@ import java.time.LocalDate
 @RequestMapping("/api/uploads")
 class UploadController(
 	private val storageService: StorageService,
-	private val userService: UserService
+	private val userService: UserService,
+	private val verificationQueueService: VerificationQueueService,
 ) {
 
 	data class PresignRequest(
@@ -45,28 +48,9 @@ class UploadController(
 		@Validated @RequestBody req: PresignRequest,
 		@RequestHeader(name = "Authorization", required = false) authorizationHeader: String?
 	): ResponseEntity<Any> {
-		if (authorizationHeader.isNullOrBlank()) {
-			return ResponseEntity
-				.status(HttpStatus.UNAUTHORIZED)
-				.body(mapOf("error" to "Authorization header is missing"))
-		}
-		val parts = authorizationHeader.split(" ", limit = 2)
-		if (parts.size != 2 || !parts[0].equals("tma", ignoreCase = true)) {
-			return ResponseEntity
-				.status(HttpStatus.UNAUTHORIZED)
-				.body(mapOf("error" to "Invalid Authorization header format. Expected 'tma <initData>'"))
-		}
-		val initData = parts[1]
-		val user = try {
-			userService.createOrUpdateUser(initData)
-		} catch (e: IllegalArgumentException) {
-			return ResponseEntity
-				.status(HttpStatus.UNAUTHORIZED)
-				.body(mapOf("error" to e.message))
-		} catch (e: Exception) {
-			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(mapOf("error" to "Internal server error: ${e.message}"))
+		val (user, errorResponse) = getUserOrErrorResponse(authorizationHeader)
+		if (user == null) {
+			return errorResponse!!
 		}
 
 		val hint = sanitizeSegment(req.objectToFind, maxLen = 48)
@@ -105,6 +89,79 @@ class UploadController(
 		)
 	}
 
+	data class VerificationRequest(
+		@field:NotBlank
+		val objectKey: String,
+		@field:NotBlank
+		val expectedLabel: String,
+		val questId: Long? = null,
+		val allowFeedPhotos: Boolean = false,
+	)
+
+	data class VerificationEnqueueResponse(
+		@JsonProperty("taskId")
+		val taskId: String,
+		@JsonProperty("status")
+		val status: VerificationQueueService.VerificationStatus
+	)
+
+	data class VerificationStatusResponse(
+		@JsonProperty("taskId")
+		val taskId: String,
+		@JsonProperty("status")
+		val status: VerificationQueueService.VerificationStatus
+	)
+
+	@PostMapping("/verify")
+	fun requestVerification(
+		@Validated @RequestBody req: VerificationRequest,
+		@RequestHeader(name = "Authorization", required = false) authorizationHeader: String?
+	): ResponseEntity<Any> {
+		val (user, errorResponse) = getUserOrErrorResponse(authorizationHeader)
+		if (user == null) {
+			return errorResponse!!
+		}
+
+		return try {
+			val result = verificationQueueService.enqueueVerification(
+				user = user,
+				objectKey = req.objectKey,
+				expectedLabel = req.expectedLabel,
+				questId = req.questId,
+				allowFeedPhotos = req.allowFeedPhotos
+			)
+			ResponseEntity.status(HttpStatus.ACCEPTED)
+				.body(VerificationEnqueueResponse(taskId = result.taskId, status = result.status))
+		} catch (e: IllegalArgumentException) {
+			ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(mapOf("error" to e.message))
+		} catch (e: Exception) {
+			ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(mapOf("error" to "Unable to queue verification: ${e.message}"))
+		}
+	}
+
+	@GetMapping("/verify/status")
+	fun verificationStatus(
+		@RequestParam("taskId") taskId: String,
+		@RequestHeader(name = "Authorization", required = false) authorizationHeader: String?
+	): ResponseEntity<Any> {
+		val (user, errorResponse) = getUserOrErrorResponse(authorizationHeader)
+		if (user == null) {
+			return errorResponse!!
+		}
+
+		val userId = user.id ?: return ResponseEntity
+			.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(mapOf("error" to "User is not persisted yet"))
+
+		val status = verificationQueueService.getStatusForUser(taskId, userId)
+			?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(mapOf("error" to "Task not found"))
+
+		return ResponseEntity.ok(VerificationStatusResponse(taskId = taskId, status = status))
+	}
+
 	private val random = SecureRandom()
 	private val base62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
 
@@ -121,6 +178,35 @@ class UploadController(
 			.replace(Regex("[^a-z0-9._-]+"), "-")
 			.trim('-')
 		return if (cleaned.length > maxLen) cleaned.substring(0, maxLen) else cleaned
+	}
+
+	private fun getUserOrErrorResponse(
+		authorizationHeader: String?
+	): Pair<User?, ResponseEntity<Any>?> {
+		if (authorizationHeader.isNullOrBlank()) {
+			return null to ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.body(mapOf("error" to "Authorization header is missing"))
+		}
+		val parts = authorizationHeader.split(" ", limit = 2)
+		if (parts.size != 2 || !parts[0].equals("tma", ignoreCase = true)) {
+			return null to ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.body(mapOf("error" to "Invalid Authorization header format. Expected 'tma <initData>'"))
+		}
+		val initData = parts[1]
+		val user = try {
+			userService.createOrUpdateUser(initData)
+		} catch (e: IllegalArgumentException) {
+			return null to ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.body(mapOf("error" to e.message))
+		} catch (e: Exception) {
+			return null to ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(mapOf("error" to "Internal server error: ${e.message}"))
+		}
+		return user to null
 	}
 
 }
