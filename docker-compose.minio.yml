@@ -25,8 +25,19 @@ services:
       echo 'MinIO initialized'
       "
 
+  redis:
+    image: redis:7-alpine
+    container_name: snapmap-redis
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   minio_data:
+    driver: local
+  redis_data:
     driver: local
 
 
