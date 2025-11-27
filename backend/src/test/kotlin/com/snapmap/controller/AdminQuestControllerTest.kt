@@ -61,7 +61,6 @@ class AdminQuestControllerTest @Autowired constructor(
             metadata = """{"difficulty":"medium"}"""
         )
 
-    // --- GET /api/admin/quests
     @Nested
     inner class GetAllQuests {
 
@@ -105,7 +104,6 @@ class AdminQuestControllerTest @Autowired constructor(
         }
     }
 
-    // --- GET /api/admin/quests/{id}
     @Nested
     inner class GetQuestById {
 
@@ -139,7 +137,6 @@ class AdminQuestControllerTest @Autowired constructor(
         }
     }
 
-    // --- DELETE /api/admin/quests/{id}
     @Nested
     inner class DeleteQuest {
 
