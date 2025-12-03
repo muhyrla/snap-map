@@ -2,6 +2,7 @@ package com.snapmap.controller
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.snapmap.model.User
+import com.snapmap.model.VerificationStatus
 import com.snapmap.service.StorageService
 import com.snapmap.service.UserService
 import com.snapmap.service.VerificationQueueService
@@ -102,14 +103,14 @@ class UploadController(
 		@JsonProperty("taskId")
 		val taskId: String,
 		@JsonProperty("status")
-		val status: VerificationQueueService.VerificationStatus
+		val status: VerificationStatus
 	)
 
 	data class VerificationStatusResponse(
 		@JsonProperty("taskId")
 		val taskId: String,
 		@JsonProperty("status")
-		val status: VerificationQueueService.VerificationStatus
+		val status: VerificationStatus
 	)
 
 	@PostMapping("/verify")
@@ -210,5 +211,3 @@ class UploadController(
 	}
 
 }
-
-
