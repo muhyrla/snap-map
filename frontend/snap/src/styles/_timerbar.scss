@@ -1,0 +1,17 @@
+@use './variables' as vars;
+
+.timerbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  cursor: default;
+
+  .timer {
+    color: #007AFF;
+    font-weight: 700;
+    font-size: 16px;
+  }
+}

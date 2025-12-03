@@ -1,8 +1,44 @@
 @use '../styles/variables' as vars;
-.post {
-  background:  vars.$card; border-radius: vars.$radius; padding: 12px; margin-top: 10px;
 
-  .photo { position: relative; border-radius: 12px; overflow: hidden;
-    img { display: block; width: 100%; height: auto; }
+.feed {
+  margin-top: 47px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  &__tag {
+    border-radius: 999px;
+    border: 1px solid #007AFF;
+    background: rgba(0, 122, 255, 0.08);
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #007AFF;
+    cursor: default;
+  }
+
+  .photo {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
   }
 }

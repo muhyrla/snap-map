@@ -1,0 +1,51 @@
+@use './variables' as vars;
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quest {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  border-radius: 16px;
+  cursor: pointer;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background: darken(white, 5%);
+  }
+}
+
+.quest {
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    text-align: left;
+    align-items: flex-start;
+  }
+  &__title {
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__points {
+    font-size: 12px;
+    color: vars.$muted;
+  }
+  &__arrow {
+    font-size: 20px;
+    font-weight: 700;
+    color: #a9b2c3;
+  }
+}

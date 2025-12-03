@@ -1,0 +1,74 @@
+.header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+}
+
+.header__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0f0ff;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007AFF;
+  font-size: 18px;
+}
+
+.avatar__icon {
+  line-height: 1;
+}
+
+.username {
+  font-size: 16px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.money-button {
+  font-size: 14px;
+  font-weight: 500;
+  color: #007AFF;
+  background: none;
+  border: 1px solid #007AFF;
+  border-radius: 999px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.header__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.header__btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}

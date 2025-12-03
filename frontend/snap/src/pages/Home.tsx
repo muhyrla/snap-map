@@ -1,40 +1,54 @@
 import { Header } from '../components/Header';
-import { Headline } from '../components/Headline';
 import { Post } from '../components/Post';
-import { Tabbar } from '../components/Tabbar';
 import '../styles/style.scss';
+
+const FEED_MOCK = [
+  {
+    id: '1',
+    username: 'Пользователь',
+    tag: 'Синий цветок',
+    text: 'Описание пызыщдадывазд выывадываывыждадывадывыжыж адлыыжвал',
+    imageUrl: '/posti/post1.jpeg',
+  },
+  {
+    id: '2',
+    username: 'Пользователь',
+    tag: 'Красный цветок',
+    text: 'Ещё один тестовый пост для ленты.',
+    imageUrl: '/posti/post2.jpeg',
+  },
+];
 
 export default function Home() {
   return (
     <main className="screen">
-      <Header username="USERNAME" balance="10.000$" />
-
-      <Headline
-        title="some big text here"
-        subtitle="some small text here some small text here some small text here"
-      />
-
-      <section className="row gap10 mt10">
-        <div className="card stat">
-          <div className="small">заданий<br/>выполнено:</div>
-          <div className="stat__value">70</div>
+      <div className="screen-header-block">
+        <Header />
+        <div className="headline-container">
+          <div className="counters">
+              <div className="counter-item">
+                  <div className="counter-text">Заданий выполнено</div>
+                  <div className="counter-value">52</div>
+              </div>
+              <div className="counter-item">
+                  <div className="counter-text">Daily счётчик</div>
+                  <div className="counter-value">17</div>
+              </div>
+          </div>
         </div>
-        <div className="card stat">
-          <div className="small">Daily<br/>счётчик:</div>
-          <div className="stat__value">2</div>
-        </div>
-      </section>
+      </div>
 
-      <div className="hr" />
-
-      <Post
-        username="USERNAME"
-        text="сфоткал манула нейросеть ебанулась"
-        imageUrl="https://images.unsplash.com/photo-1581888227599-779811939232?q=80&w=1080&auto=format&fit=crop"
-      />
-      <Post username="USERNAME" />
-
-      <Tabbar active="home" />
+      <div className="feed">
+        {FEED_MOCK.map(post => (
+          <Post
+            key={post.id}
+            username={post.username}
+            text={post.text}
+            imageUrl={post.imageUrl}
+            tag={post.tag}
+          />
+        ))}
+      </div>
     </main>
   );
 }
