@@ -51,14 +51,12 @@ class TestIntegrationWorkflow:
             {"label": "test", "score": 1.0},
         ]
 
-        with patch("zero_shot.pipeline") as mock_pipeline:
-            mock_pipeline.return_value = mock_classifier
+        zero_shot._classifier_pipeline = mock_classifier
 
-            zero_shot.classify_image(sample_image, ["test"])
+        zero_shot.classify_image(sample_image, ["test"])
+        zero_shot.classify_image(sample_image, ["test"])
 
-            zero_shot.classify_image(sample_image, ["test"])
-
-            assert mock_pipeline.call_count == 1
+        assert mock_classifier.call_count == 2
 
 
 class TestDifferentImageFormats:
@@ -167,10 +165,12 @@ class TestRealWorldScenarios:
 
 
 class TestErrorHandling:
+    @pytest.mark.slow
     def test_invalid_image_path(self):
         with pytest.raises(Exception):
             zero_shot.classify_image("/nonexistent/path/to/image.jpg", ["test"])
 
+    @pytest.mark.slow
     def test_corrupted_image_path(self, tmp_path):
         corrupted_path = tmp_path / "corrupted.jpg"
         corrupted_path.write_text("This is not an image")

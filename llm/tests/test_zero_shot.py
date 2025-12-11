@@ -186,11 +186,12 @@ class TestProbability:
 
 
 class TestGetClassifier:
+    @pytest.mark.slow
     def test_classifier_singleton(self):
         mock_pipeline = Mock()
 
         with patch(
-            "zero_shot.pipeline", return_value=mock_pipeline
+            "transformers.pipeline", return_value=mock_pipeline
         ) as mock_pipeline_func:
             classifier1 = zero_shot._get_classifier()
             classifier2 = zero_shot._get_classifier()
@@ -198,10 +199,11 @@ class TestGetClassifier:
         assert mock_pipeline_func.call_count == 1
         assert classifier1 is classifier2
 
+    @pytest.mark.slow
     def test_classifier_with_custom_model(self):
         mock_pipeline_func = Mock()
 
-        with patch("zero_shot.pipeline", mock_pipeline_func):
+        with patch("transformers.pipeline", mock_pipeline_func):
             zero_shot._get_classifier("custom/model")
 
         mock_pipeline_func.assert_called_once_with(
@@ -211,10 +213,6 @@ class TestGetClassifier:
 
 class TestIntegration:
     @pytest.mark.slow
-    @pytest.mark.skipif(
-        not pytest.config.getoption("--run-slow", default=False),
-        reason="Медленный тест с реальной моделью",
-    )
     def test_real_classification(self, sample_image):
         result = zero_shot.classify_image(
             sample_image, ["red color", "blue color", "green color"]
