@@ -173,3 +173,14 @@ def unicode_labels():
         "🐱",
         "🐶",
     ]
+
+
+@pytest.fixture
+def real_dog_image_path():
+    """Real dog photo (decrypted.png) for testing with actual images."""
+    from pathlib import Path
+
+    image_path = Path(__file__).parent.parent / "decrypted.png"
+    if not image_path.exists():
+        pytest.skip(f"Real dog image not found at {image_path}")
+    return str(image_path)
