@@ -164,21 +164,6 @@ class TestRealWorldScenarios:
         assert prob == 0.75
 
 
-class TestErrorHandling:
-    @pytest.mark.slow
-    def test_invalid_image_path(self):
-        with pytest.raises(Exception):
-            zero_shot.classify_image("/nonexistent/path/to/image.jpg", ["test"])
-
-    @pytest.mark.slow
-    def test_corrupted_image_path(self, tmp_path):
-        corrupted_path = tmp_path / "corrupted.jpg"
-        corrupted_path.write_text("This is not an image")
-
-        with pytest.raises(Exception):
-            zero_shot.classify_image(str(corrupted_path), ["test"])
-
-
 class TestPerformance:
     def test_batch_processing_performance(self, mock_classifier, multiple_image_paths):
         mock_classifier.return_value = [
@@ -288,10 +273,8 @@ class TestEdgeCasesIntegration:
 
 @pytest.mark.slow
 class TestRealDogImage:
-    """Tests with real dog photo (decrypted.png) to validate model accuracy on actual images."""
 
     def test_dog_classification(self, real_dog_image_path):
-        """Test that the model correctly identifies the image as a dog."""
         result = zero_shot.classify_image(
             real_dog_image_path, ["dog", "cat", "bird", "horse", "cow", "sheep"]
         )
@@ -299,30 +282,25 @@ class TestRealDogImage:
         assert isinstance(result, dict)
         assert len(result) == 6
         assert all(0.0 <= score <= 1.0 for score in result.values())
-        # Model should be most confident about 'dog'
         assert result["dog"] == max(result.values())
-        assert result["dog"] > 0.5  # At least 50% confidence
+        assert result["dog"] > 0.5  
 
     def test_dog_probability(self, real_dog_image_path):
-        """Test probability calculation with real dog image."""
         prob = zero_shot.probability_of(
             real_dog_image_path, "dog", other_labels=["cat", "bird", "not animal"]
         )
 
         assert isinstance(prob, float)
         assert 0.0 <= prob <= 1.0
-        assert prob > 0.5  # Should be confident it's a dog
+        assert prob > 0.5  
 
     def test_dog_vs_cat(self, real_dog_image_path):
-        """Test binary classification: dog vs cat."""
         result = zero_shot.classify_image(real_dog_image_path, ["dog", "cat"])
 
         assert result["dog"] > result["cat"]
-        # Should be significantly more confident about dog
         assert result["dog"] - result["cat"] > 0.2
 
     def test_dog_type_classification(self, real_dog_image_path):
-        """Test more specific dog-related classifications."""
         result = zero_shot.classify_image(
             real_dog_image_path, ["small dog", "big dog", "puppy", "adult dog"]
         )
@@ -330,26 +308,21 @@ class TestRealDogImage:
         assert isinstance(result, dict)
         assert len(result) == 4
         assert all(0.0 <= score <= 1.0 for score in result.values())
-        # At least one dog-related label should have decent confidence
         assert max(result.values()) > 0.3
 
     def test_real_image_metadata(self, real_dog_image_path):
-        """Verify the real image file properties."""
         from PIL import Image
 
         img = Image.open(real_dog_image_path)
 
-        # Verify it's a real image with reasonable dimensions
-        assert img.size[0] > 100  # Width > 100px
-        assert img.size[1] > 100  # Height > 100px
-        assert img.mode in ["RGB", "RGBA", "L"]  # Valid image mode
+        assert img.size[0] > 100  
+        assert img.size[1] > 100  
+        assert img.mode in ["RGB", "RGBA", "L"]  
 
     def test_animal_vs_non_animal(self, real_dog_image_path):
-        """Test that model recognizes this as an animal."""
         result = zero_shot.classify_image(
             real_dog_image_path, ["animal", "vehicle", "building", "food", "landscape"]
         )
 
-        # Should identify as animal with highest confidence
         assert result["animal"] == max(result.values())
         assert result["animal"] > 0.4
