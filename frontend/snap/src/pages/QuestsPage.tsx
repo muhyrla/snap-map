@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { useState } from 'react';
 import { Header } from '../components/Header';
 import { Quest, Difficulty } from '../components/Quests';
@@ -23,10 +24,21 @@ const DATA: QuestItem[] = [
   { id:'11', title:'беляшка гег', points:315, difficulty:'special', tab:'special' },
   { id:'12', title:'бутылка карачинской', points:777, difficulty:'special', tab:'special'},
 ];
+=======
+import { useState, useEffect } from 'react';
+import { Header } from '../components/Header';
+import { Quest } from '../components/Quests';
+import { TimerBar } from '../components/TimerBar';
+import { getQuestsByTab, Tab, QuestItem } from '../services/questsService';
+>>>>>>> Stashed changes
 
 export default function QuestsPage() {
   const [tab, setTab] = useState<Tab>('daily');
-  const list = DATA.filter(q => q.tab === tab);
+  const [list, setList] = useState<QuestItem[]>([]);
+
+  useEffect(() => {
+    getQuestsByTab(tab).then(setList);
+  }, [tab]);
 
   return (
     <main className="screen">
