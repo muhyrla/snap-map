@@ -1,10 +1,10 @@
-@use '../styles/variables' as *; // определяет $bg, $text и т.д.
-@use '../styles/base';
-@use '../styles/profile';
-@use '../styles/headline';
-@use '../styles/post';
-@use '../styles/tabbar';
-@use '../styles/card';
-@use './tabs';
-@use './quests';
-@use './timerbar';
+@import './variables';
+@import './base';
+@import './header';
+@import './profile';
+@import './headline';
+@import './post';
+@import './tabbar';
+@import './tabs';
+@import './quests';
+@import './timerbar';

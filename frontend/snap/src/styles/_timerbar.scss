@@ -1,15 +1,17 @@
 @use './variables' as vars;
 
-.timerbar{
-  position: fixed;
-  left: 0; right: 0;
-  /* bottom задаём инлайн через стиль из компонента, чтобы зависеть от высоты таббара */
-  display: grid; place-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  pointer-events: none;            /* чтобы не мешал клику по таббару */
-}
-.timerbar .timer{
-  color: #09c55c;
-  font-weight: 700;
+.timerbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  cursor: default;
+
+  .timer {
+    color: #007AFF;
+    font-weight: 700;
+    font-size: 16px;
+  }
 }

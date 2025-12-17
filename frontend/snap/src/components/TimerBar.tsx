@@ -4,7 +4,6 @@ export type Difficulty = 'daily' | 'weekly' | 'special';
 
 type Props = {
   difficulty: Difficulty;      // влияет на период
-  anchorHeight?: number;       // высота tabbar, по умолчанию 90px
 };
 
 const PERIOD_BY_DIFF: Record<Difficulty, number> = {
@@ -22,19 +21,30 @@ function formatLeft(ms: number) {
   return `${d}д ${h}ч ${m}м`;
 }
 
-export function TimerBar({ difficulty, anchorHeight = 90 }: Props) {
-  // конечная дата = ближайшая «кратная» смена от начала суток
+export function TimerBar({ difficulty }: Props) {
+  // конечная дата = ближайшая «кратная» смена от начала суток/недели/месяца
   const periodDays = PERIOD_BY_DIFF[difficulty];
 
   const target = useMemo(() => {
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const msFromStart = now.getTime() - startOfDay.getTime();
+    let startOf: Date;
+
+    if (difficulty === 'weekly') {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+      startOf = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (difficulty === 'special') {
+      startOf = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else { // daily
+      startOf = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    const msFromStart = now.getTime() - startOf.getTime();
     const periodMs = periodDays * 24 * 60 * 60 * 1000;
     const passedPeriods = Math.floor(msFromStart / periodMs);
-    const nextEdge = startOfDay.getTime() + (passedPeriods + 1) * periodMs;
+    const nextEdge = startOf.getTime() + (passedPeriods + 1) * periodMs;
     return new Date(nextEdge);
-  }, [periodDays]);
+  }, [difficulty, periodDays]);
 
   const [left, setLeft] = useState(target.getTime() - Date.now());
   useEffect(() => {
@@ -43,8 +53,7 @@ export function TimerBar({ difficulty, anchorHeight = 90 }: Props) {
   }, [target]);
 
   return (
-    <div className="timerbar" style={{ bottom: `calc(${anchorHeight}px + env(safe-area-inset-bottom))` }}>
-      <div className="small center">задания обновятся через</div>
+    <div className="timerbar">
       <div className="timer">{formatLeft(left)}</div>
     </div>
   );

@@ -1,5 +1,26 @@
 @use './variables' as vars;
 
-.tabs{ display:flex; gap:12px; padding:6px 0; border-bottom:1px solid #ccc; margin-bottom:10px; }
-.tab{ background:transparent; border:none; font-size:12px; color:vars.$muted; padding:6px 0; cursor:pointer; }
-.tab--active{ color:vars.$text; font-weight:700; }
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.tab {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: #FFFFFF;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: vars.$text;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.tab--active {
+  background: #007AFF;
+  color: #FFFFFF;
+  font-weight: 600;
+}
