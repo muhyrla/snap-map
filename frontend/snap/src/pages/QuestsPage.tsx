@@ -1,36 +1,8 @@
-<<<<<<< Updated upstream
-import { useState } from 'react';
-import { Header } from '../components/Header';
-import { Quest, Difficulty } from '../components/Quests';
-import { TimerBar } from '../components/TimerBar';
-import { tab } from '@testing-library/user-event/dist/tab';
-
-type Tab = 'daily' | 'weekly' | 'special';
-type QuestItem = { id: string; title: string; points: number; difficulty: Difficulty; tab: Tab };
-
-const DATA: QuestItem[] = [
-  { id:'1', title:'яркий алый цветок', points:115, difficulty:'weekly', tab:'weekly' },
-  { id:'2', title:'пышный красный', points:115, difficulty:'weekly', tab:'weekly' },
-  { id:'3', title:'синий цветок', points:208, difficulty:'weekly', tab:'weekly' },
-  { id:'4', title:'желтый цветок', points:150, difficulty:'weekly', tab:'weekly' },
-
-  { id:'5', title:'свиристели', points:115, difficulty:'daily', tab:'daily' },
-  { id:'6', title:'знак пешеходного', points:115, difficulty:'daily', tab:'daily' },
-  { id:'7', title:'колесо обозрения', points:208, difficulty:'daily', tab:'daily' },
-  { id:'8', title:'галоша', points:152, difficulty:'daily', tab:'daily' },
-  { id:'9', title: 'МИШИН НОСЯРА', points:0.5, difficulty:'weekly', tab:'daily' },
-
-  { id:'10', title:'скурагов гег', points:315, difficulty:'special', tab:'special' },
-  { id:'11', title:'беляшка гег', points:315, difficulty:'special', tab:'special' },
-  { id:'12', title:'бутылка карачинской', points:777, difficulty:'special', tab:'special'},
-];
-=======
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Quest } from '../components/Quests';
 import { TimerBar } from '../components/TimerBar';
 import { getQuestsByTab, Tab, QuestItem } from '../services/questsService';
->>>>>>> Stashed changes
 
 export default function QuestsPage() {
   const [tab, setTab] = useState<Tab>('daily');
