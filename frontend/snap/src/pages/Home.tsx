@@ -19,6 +19,13 @@ export default function Home() {
     }
   };
 
+  const handleShop = () => {
+    if (window.location.pathname !== '/shop') {
+      window.history.pushState({}, '', '/shop');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  };
+
   return (
     <main className="screen">
       <Header username={displayName} balance="10.000$" onSettings={handleSettings} />
@@ -49,7 +56,7 @@ export default function Home() {
       <Post username="USERNAME" />
       <Post username={displayName} />
 
-      <Tabbar active="home" />
+      <Tabbar active="home" onShop={handleShop} />
     </main>
   );
 }

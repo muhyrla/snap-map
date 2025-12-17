@@ -3,15 +3,22 @@ import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Leaderboard from './pages/Leaderboard';
 import Home from './pages/Home';
+import Shop from './pages/Shop';
 
 function AppContent() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const [route, setRoute] = useState<string>(window.location.pathname || '/');
 
   useEffect(() => {
     const onPop = () => setRoute(window.location.pathname || '/');
     window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
+    // Также слушаем кастомные события для навигации через Tabbar
+    const onRouteChange = () => setRoute(window.location.pathname || '/');
+    window.addEventListener('popstate', onRouteChange);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('popstate', onRouteChange);
+    };
   }, []);
 
     const navigate = (path: string) => {
@@ -34,6 +41,10 @@ function AppContent() {
     );
   }
 
+  if (route === '/shop') {
+    return <Shop />;
+  }
+
   if (isLoading) {
     return (
       <main className="screen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -42,19 +53,8 @@ function AppContent() {
     );
   }
 
-  // With automatic auth enabled in AuthProvider, we expect isAuthenticated to become true
-  // once init completes. If not authenticated, fall back to Home (no manual authorize page).
-
-  return (
-    <main className="screen">
-      <div style={{ position: 'absolute', top: 8, right: 12 }}>
-        <button onClick={() => navigate('/leaderboard')} style={{ padding: '6px 10px' }}>
-          Открыть Leaderboard
-        </button>
-      </div>
-      <Home />
-    </main>
-  );
+  // Default route is home
+  return <Home />;
 }
 
 export default function App() {
