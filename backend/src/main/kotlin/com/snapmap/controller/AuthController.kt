@@ -1,7 +1,6 @@
 package com.snapmap.controller
 
-import com.snapmap.service.TelegramAuthService
-import com.snapmap.security.TelegramInitDataValidator
+import com.snapmap.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api")
 class AuthController(
-    private val authService: TelegramAuthService
+    private val userService: UserService
 ) {
 
     @GetMapping("/me")
@@ -33,17 +32,29 @@ class AuthController(
         }
 
         val initData = parts[1]
-        val result = authService.verify(initData)
-
-        return when (result) {
-            is TelegramInitDataValidator.InitDataResult.Valid -> {
-                ResponseEntity.ok(result.data)
-            }
-            is TelegramInitDataValidator.InitDataResult.Invalid -> {
-                ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(mapOf("error" to result.reason))
-            }
+        
+        return try {
+            val user = userService.createOrUpdateUser(initData)
+            
+            val userData = mapOf(
+                "id" to user.id,
+                "tg_id" to user.tgId,
+                "tg_username" to user.tgUsername,
+                "tg_avatar" to user.tgAvatar,
+                "tg_fullname" to user.tgFullname,
+                "city" to user.city,
+                "balance" to user.balance
+            )
+            
+            ResponseEntity.ok(userData)
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(mapOf("error" to e.message))
+        } catch (e: Exception) {
+            ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(mapOf("error" to "Internal server error: ${e.message}"))
         }
     }
 }

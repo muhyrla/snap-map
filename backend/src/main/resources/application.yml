@@ -3,24 +3,23 @@ spring:
     name: snap-map-backend
   
   datasource:
-    url: jdbc:h2:mem:snapmapdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: 
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snap-map}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
   
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:}
 
 server:
   port: 8080
@@ -35,4 +34,40 @@ logging:
 
 telegram:
   bot-token: ${SNAP_MAP_BOT_TOKEN:}
+
+s3:
+  endpoint: ${S3_ENDPOINT:http://127.0.0.1:9000}
+  region: ${S3_REGION:us-east-1}
+  accessKey: ${S3_ACCESS_KEY:minioadmin}
+  secretKey: ${S3_SECRET_KEY:minioadmin}
+  bucket: ${S3_BUCKET:snapmap}
+
+redis:
+  host: ${REDIS_HOST:127.0.0.1}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  database: ${REDIS_DATABASE:0}
+  queue-key: ${REDIS_QUEUE_KEY:moderation:queue}
+  status-key-prefix: ${REDIS_STATUS_KEY_PREFIX:moderation:status}
+  result-key-prefix: ${REDIS_RESULT_KEY_PREFIX:moderation:result}
+  events-topic: ${REDIS_EVENTS_TOPIC:moderation:events}
+  task-ttl-seconds: ${REDIS_TASK_TTL_SECONDS:86400}
+
+---
+# Профиль h2 для разработки (опционально)
+spring:
+  config:
+    activate:
+      on-profile: h2
+  datasource:
+    url: jdbc:h2:mem:snapmapdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
 
