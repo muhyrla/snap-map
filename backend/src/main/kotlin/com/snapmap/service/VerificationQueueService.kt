@@ -3,6 +3,7 @@ package com.snapmap.service
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.snapmap.model.User
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -14,10 +15,12 @@ import java.util.UUID
 @Service
 class VerificationQueueService(
 	private val redisTemplate: StringRedisTemplate,
+	private val rabbitTemplate: RabbitTemplate,
 	private val objectMapper: ObjectMapper,
 	private val storageService: StorageService,
 	@Value("\${s3.bucket}") private val bucket: String,
-	@Value("\${redis.queue-key}") private val queueKey: String,
+	@Value("\${spring.rabbitmq.template.exchange}") private val exchange: String,
+	@Value("\${spring.rabbitmq.template.routing-key}") private val routingKey: String,
 	@Value("\${redis.status-key-prefix}") private val statusKeyPrefix: String,
 	@Value("\${redis.result-key-prefix}") private val resultKeyPrefix: String,
 	@Value("\${redis.task-ttl-seconds:86400}") private val taskTtlSeconds: Long,
@@ -93,8 +96,8 @@ class VerificationQueueService(
 		)
 
 		val payloadJson = objectMapper.writeValueAsString(payload)
-		redisTemplate.opsForList().leftPush(queueKey, payloadJson)
-		logger.info("Queued verification task {} for user {}", taskId, userId)
+		rabbitTemplate.convertAndSend(exchange, routingKey, payloadJson)
+		logger.info("Enqueued verification task {} to RabbitMQ for user {}", taskId, userId)
 
 		val status = VerificationStatus(
 			taskId = taskId,

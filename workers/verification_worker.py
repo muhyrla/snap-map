@@ -8,6 +8,7 @@ from typing import Any, Dict, Optional
 
 import boto3
 import redis
+import pika
 
 import sys
 
@@ -36,12 +37,17 @@ REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") or None
 REDIS_DB = int(os.getenv("REDIS_DATABASE", "0"))
-QUEUE_KEY = os.getenv("REDIS_QUEUE_KEY", "moderation:queue")
 STATUS_PREFIX = os.getenv("REDIS_STATUS_KEY_PREFIX", "moderation:status")
 RESULT_PREFIX = os.getenv("REDIS_RESULT_KEY_PREFIX", "moderation:result")
 EVENTS_TOPIC = os.getenv("REDIS_EVENTS_TOPIC", "moderation:events")
 TASK_TTL_SECONDS = int(os.getenv("REDIS_TASK_TTL_SECONDS", "86400"))
 VERIFICATION_THRESHOLD = float(os.getenv("VERIFICATION_THRESHOLD", "0.55"))
+
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "127.0.0.1")
+RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
+RABBIT_USER = os.getenv("RABBIT_USER", "guest")
+RABBIT_PASS = os.getenv("RABBIT_PASS", "guest")
+QUEUE_NAME = os.getenv("RABBITMQ_ROUTING_KEY", "moderation.tasks")
 
 OTHER_LABELS = [
 	"background",
@@ -112,14 +118,14 @@ def download_to_temp(bucket: str, object_key: str) -> str:
 	return tmp_path
 
 
-def handle_task(raw_task: str) -> None:
-	task = json.loads(raw_task)
-	task_id = task["taskId"]
-	logger.info("Processing task %s for user %s", task_id, task["userId"])
-
-	save_status(task, "PROCESSING", "Worker started")
-
+def handle_task(ch, method, properties, body):
 	try:
+		task = json.loads(body)
+		task_id = task["taskId"]
+		logger.info("Processing task %s for user %s", task_id, task["userId"])
+
+		save_status(task, "PROCESSING", "Worker started")
+
 		temp_path = download_to_temp(task["bucket"], task["objectKey"])
 		try:
 			score = probability_of(
@@ -163,32 +169,39 @@ def handle_task(raw_task: str) -> None:
 		)
 
 		logger.info("Task %s %s (%s)", task_id, decision, message)
+		ch.basic_ack(delivery_tag=method.delivery_tag)
 	except Exception as exc:  # pylint: disable=broad-except
-		logger.exception("Task %s failed: %s", task_id, exc)
-		save_status(task, "FAILED", str(exc))
-		publish_event(
-			{
-				"type": "VERIFICATION_FAILED",
-				"taskId": task_id,
-				"status": "FAILED",
-				"userId": task["userId"],
-				"error": str(exc),
-			}
-		)
+		logger.exception("Task processing failed: %s", exc)
+		# В случае ошибки возвращаем в очередь
+		ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
 
 def main() -> None:
-	logger.info("Verification worker started. Waiting for tasks on %s", QUEUE_KEY)
+	logger.info("Connecting to RabbitMQ at %s:%s", RABBITMQ_HOST, RABBITMQ_PORT)
+	credentials = pika.PlainCredentials(RABBIT_USER, RABBIT_PASS)
+	parameters = pika.ConnectionParameters(
+		host=RABBITMQ_HOST,
+		port=RABBITMQ_PORT,
+		credentials=credentials,
+		heartbeat=600,
+		blocked_connection_timeout=300
+	)
+	
 	while True:
 		try:
-			item = redis_client.brpop(QUEUE_KEY, timeout=5)
-			if not item:
-				continue
-			_, raw_task = item
-			handle_task(raw_task)
-		except redis.RedisError as exc:
-			logger.error("Redis error: %s", exc)
-			time.sleep(2)
+			connection = pika.BlockingConnection(parameters)
+			channel = connection.channel()
+			channel.queue_declare(queue=QUEUE_NAME, durable=True)
+			
+			# Устанавливаем prefetch_count=1, чтобы воркер брал по одной задаче
+			channel.basic_qos(prefetch_count=1)
+			channel.basic_consume(queue=QUEUE_NAME, on_message_callback=handle_task)
+
+			logger.info("Worker started. Waiting for tasks on %s", QUEUE_NAME)
+			channel.start_consuming()
+		except pika.exceptions.AMQPConnectionError as exc:
+			logger.error("Connection failed, retrying in 5s... (%s)", exc)
+			time.sleep(5)
 		except KeyboardInterrupt:
 			logger.info("Worker interrupted, exiting")
 			break
@@ -196,5 +209,3 @@ def main() -> None:
 
 if __name__ == "__main__":
 	main()
-
-
