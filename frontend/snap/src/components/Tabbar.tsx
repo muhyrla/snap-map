@@ -1,20 +1,38 @@
 import React from 'react';
 import '../styles/_tabbar.scss';
 
+type LegacyScreen = 'home' | 'quests';
+type ActiveScreen = 'home' | 'quests' | 'shop';
+
 interface TabbarProps {
-  screen: 'home' | 'quests';
-  setScreen: (screen: 'home' | 'quests') => void;
+  // old API
+  screen?: LegacyScreen;
+  setScreen?: (screen: LegacyScreen) => void;
+  // new API used in pages
+  active?: ActiveScreen;
+  onHome?: () => void;
 }
 
-const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen }) => {
+export const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen, active, onHome }) => {
+  const current = active ?? screen ?? 'home';
+
+  const goHome = () => {
+    if (onHome) return onHome();
+    if (setScreen) return setScreen('home');
+  };
+
+  const goQuests = () => {
+    if (setScreen) return setScreen('quests');
+  };
+
   return (
     <div className="tabbar">
       <div className="tabbar-inner">
         <img
           src="/icons/fluent_home-24-filled.svg"
           alt="Home"
-          className={`tab-icon ${screen === 'home' ? 'active' : ''}`}
-          onClick={() => setScreen('home')}
+          className={`tab-icon ${current === 'home' ? 'active' : ''}`}
+          onClick={goHome}
         />
         <img
           src="/icons/Vector.svg"
@@ -31,13 +49,13 @@ const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen }) => {
         <img
           src="/icons/streamline-flex_multiple-stars-solid.svg"
           alt="Stars"
-          className={`tab-icon ${screen === 'quests' ? 'active' : ''}`}
-          onClick={() => setScreen('quests')}
+          className={`tab-icon ${current === 'quests' ? 'active' : ''}`}
+          onClick={goQuests}
         />
         <img
           src="/icons/solar_shop-bold.svg"
           alt="Shop"
-          className="tab-icon"
+          className={`tab-icon ${current === 'shop' ? 'active' : ''}`}
         />
       </div>
     </div>

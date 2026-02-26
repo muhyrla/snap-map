@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
-    "sass": "^1.93.3"
+    "sass": "^1.93.3",
+    "serve": "^14.2.5"
   }
 }
