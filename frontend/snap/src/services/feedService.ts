@@ -24,13 +24,7 @@ const FEED_MOCK: FeedPost[] = [
   },
 ];
 
-/**
- * Получить данные ленты
- * Сейчас возвращает моки, позже можно заменить на реальный API вызов
- */
 export async function getFeed(): Promise<FeedPost[]> {
-  // TODO: Заменить на реальный API вызов
-  // Пример:
   // const response = await fetch('/api/feed');
   // return response.json();
   
