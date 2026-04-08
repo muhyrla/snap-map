@@ -1,23 +1,35 @@
-type HeaderProps = { username: string; balance: string; onSettings?: () => void };
-export function Header({ username, balance, onSettings }: HeaderProps) {
+interface HeaderProps {
+  username?: string;
+  balance?: string;
+  onSettings?: () => void;
+}
+
+export function Header({ username, balance, onSettings }: HeaderProps = {}) {
+  const displayUsername = username || 'Пользователь';
+  const displayBalance = balance || 'стопитсот денег';
+
   return (
-    <section className="profile">
-      <div className="avatar">👤</div>
-      <div className="user">
-        <div className="name">{username}</div>
-        <div className="small">{balance}</div>
+    <header className="header">
+      <div className="header__row">
+        <img src="/icons/SnapMap.svg" alt="SnapMap logo" className="header__logo" />
+        <div className="header__actions">
+          <button className="header__btn" aria-label="notifications">
+            <img src="/icons/notifications.svg" alt="" />
+          </button>
+          <button className="header__btn" aria-label="settings" onClick={onSettings}>
+            <img src="/icons/settings.svg" alt="" />
+          </button>
+        </div>
       </div>
-      {/* Gear button intentionally has no action (no-op). Keep as non-focusable to avoid interaction. */}
-      <button
-        className="gear"
-        aria-label="settings"
-        onClick={() => { /* no-op */ }}
-        tabIndex={-1}
-        aria-hidden={true}
-        type="button"
-      >
-        ⚙️
-      </button>
-    </section>
+      <div className="header__row">
+        <div className="user-info">
+          <div className="avatar" aria-hidden="true">
+            <span className="avatar__icon">👤</span>
+          </div>
+          <div className="username">{displayUsername}</div>
+        </div>
+        <button className="money-button">{displayBalance}</button>
+      </div>
+    </header>
   );
 }

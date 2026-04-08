@@ -87,10 +87,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         try {
           // Динамический импорт, чтобы не ломать сборку, если пакет не установлен
-          // use eval to avoid static analysis of the import string
-          // @ts-ignore
-          // eslint-disable-next-line no-eval
-          const { retrieveLaunchParams } = await (0, eval)('import')('@telegram-apps/sdk');
+          // Используем type assertion для обхода проверки типов при статическом анализе
+          const sdkModuleName = '@telegram-apps/sdk';
+          const sdkModule = await import(/* @vite-ignore */ sdkModuleName) as any;
+          const { retrieveLaunchParams } = sdkModule;
           const launchParams = retrieveLaunchParams();
           const rawData = launchParams?.initDataRaw;
           

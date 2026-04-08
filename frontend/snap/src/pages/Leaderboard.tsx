@@ -1,12 +1,15 @@
+import { useEffect, useState } from 'react';
 import { Header } from '../components/Header';
 import { Headline } from '../components/Headline';
-import Tabbar from '../components/Tabbar';
 import { useAuth } from '../contexts/AuthContext';
+import { getLeaderboard, LeaderboardData, LeaderboardUser } from '../services/leaderboardService';
 import '../styles/style.scss';
-import '../styles/leaderboard.css';
 
 export default function Leaderboard() {
   const { user, logout } = useAuth();
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
+  const [leaderboardType, setLeaderboardType] = useState<'global' | 'local'>('global');
+  const [isLoading, setIsLoading] = useState(true);
   
   const displayName = user 
     ? (user.username || `${user.firstName} ${user.lastName || ''}`.trim() || 'Пользователь')
@@ -18,59 +21,76 @@ export default function Leaderboard() {
     }
   };
 
-  const leaders = [
-    { rank: 1, name: 'Ник', snaps: 100 },
-    { rank: 2, name: 'Никки', snaps: 100 },
-    { rank: 3, name: 'Николай', snaps: 100 },
-    { rank: 4, name: 'Никита', snaps: 100 },
-    { rank: 5, name: 'Никс', snaps: 100 },
-    { rank: 6, name: 'Николь', snaps: 100 },
-    { rank: 7, name: 'Никсель', snaps: 100 },
-    { rank: 8, name: 'Никкис', snaps: 100 },
-    { rank: 9, name: 'Николетта', snaps: 100 },
-  ];
+  useEffect(() => {
+    setIsLoading(true);
+    getLeaderboard(leaderboardType).then((data) => {
+      setLeaderboardData(data);
+      setIsLoading(false);
+    });
+  }, [leaderboardType]);
+
+  const handleTabChange = (type: 'global' | 'local') => {
+    setLeaderboardType(type);
+  };
+
+  if (isLoading || !leaderboardData) {
+    return (
+      <main className="screen">
+        <div className="screen-header-block">
+          <Header />
+        </div>
+        <div>Загрузка...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="screen">
-      <Header username={displayName} balance="10.000$" onSettings={handleSettings} />
+      <div className="screen-header-block">
+        <Header />
 
-      <Headline
-        title="Двигайся к цели"
-        subtitle="или тебя обгонят"
-      />
-
-      <div className="headline-description">
-        <p>бахай эти фотокарточки а</p>
-        <p>мы потом придумаем зачем</p>
+        <div className="leaderboard-toggle">
+          <button 
+            className={`leaderboard-toggle-btn ${leaderboardType === 'global' ? 'active' : ''}`}
+            onClick={() => handleTabChange('global')}
+          >
+            Глобальный
+          </button>
+          <button 
+            className={`leaderboard-toggle-btn ${leaderboardType === 'local' ? 'active' : ''}`}
+            onClick={() => handleTabChange('local')}
+          >
+            Местный
+          </button>
+        </div>
       </div>
 
-      <div className="leaderboard-tabs">
-        <button className="leaderboard-tab leaderboard-tab--active">GLOBAL</button>
-        <button className="leaderboard-tab">LOCAL</button>
+      <div className="leaderboard-columns">
+        <span className="col-left">Место в рейтинге</span>
+        <span className="col-right">Кол-во снэпов</span>
       </div>
 
-      <div className="leaderboard-stats">
-        <span>110203 фотографируют</span>
-        <span>Всего заработано</span>
-      </div>
-
-      <div className="leaderboard-user-row">
-        <span className="leaderboard-user-rank">100+</span>
-        <span className="leaderboard-user-label">ты</span>
-        <span className="leaderboard-user-snaps">100 снэпов</span>
-      </div>
+      {leaderboardData.currentUser && (
+        <div className="leaderboard-user-row">
+          <div className="leaderboard-user-rank">
+            {leaderboardData.currentUser.rank >= 100 ? '100+' : leaderboardData.currentUser.rank}
+          </div>
+          <span className="leaderboard-user-label">{leaderboardData.currentUser.name}</span>
+          <span className="leaderboard-user-snaps">{leaderboardData.currentUser.snaps} снэпов</span>
+        </div>
+      )}
 
       <div className="leaderboard-list">
-        {leaders.map((leader) => (
+        {leaderboardData.leaders.map((leader) => (
           <div key={leader.rank} className="leaderboard-item">
-            <span className="leaderboard-rank">{leader.rank}</span>
+            <div className={`leaderboard-rank medal-${leader.rank}`}>
+              <span className="rank-number">{leader.rank}</span>
+            </div>
             <span className="leaderboard-name">{leader.name}</span>
             <span className="leaderboard-snaps">{leader.snaps} снэпов</span>
           </div>
         ))}
       </div>
-
-      <Tabbar active="home" />
     </main>
   );
 }
