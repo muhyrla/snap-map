@@ -1,24 +1,31 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import QuestsPage from './QuestsPage';
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
+import QuestsPage from "./QuestsPage";
 
-describe('QuestsPage', () => {
-  test('(+) по умолчанию активна вкладка Daily', () => {
+describe("QuestsPage", () => {
+  test("(+) по умолчанию активна вкладка Daily", async () => {
     render(<QuestsPage />);
-    const dailyBtn = screen.getByRole('button', { name: /daily/i });
+    const dailyBtn = screen.getByRole("button", { name: /daily/i });
     expect(dailyBtn.className).toMatch(/tab--active/);
+    await act(async () => {});
   });
 
-  test('(+) после загрузки отображаются daily-квесты', async () => {
+  test("(+) после загрузки отображаются daily-квесты", async () => {
     render(<QuestsPage />);
     await waitFor(() => {
       expect(screen.getByText(/свиристели/i)).toBeInTheDocument();
     });
   });
 
-  test('(+) клик на Weekly → Weekly активен, отображаются weekly-квесты', async () => {
+  test("(+) клик на Weekly → Weekly активен, отображаются weekly-квесты", async () => {
     render(<QuestsPage />);
-    const weeklyBtn = screen.getByRole('button', { name: /weekly/i });
+    const weeklyBtn = screen.getByRole("button", { name: /weekly/i });
     fireEvent.click(weeklyBtn);
     expect(weeklyBtn.className).toMatch(/tab--active/);
     await waitFor(() => {
@@ -26,20 +33,21 @@ describe('QuestsPage', () => {
     });
   });
 
-  test('(+) клик на Special → отображаются special-квесты', async () => {
+  test("(+) клик на Special → отображаются special-квесты", async () => {
     render(<QuestsPage />);
-    fireEvent.click(screen.getByRole('button', { name: /special/i }));
+    fireEvent.click(screen.getByRole("button", { name: /special/i }));
     await waitFor(() => {
       expect(screen.getByText(/скурагов гег/i)).toBeInTheDocument();
     });
   });
 
-  test('(+) блок .timerbar присутствует в DOM', () => {
+  test("(+) блок .timerbar присутствует в DOM", async () => {
     const { container } = render(<QuestsPage />);
-    expect(container.querySelector('.timerbar')).toBeInTheDocument();
+    expect(container.querySelector(".timerbar")).toBeInTheDocument();
+    await act(async () => {});
   });
 
-  test('(-) при активной Daily-вкладке special-квесты не видны', async () => {
+  test("(-) при активной Daily-вкладке special-квесты не видны", async () => {
     render(<QuestsPage />);
     await waitFor(() => {
       expect(screen.getByText(/свиристели/i)).toBeInTheDocument();
@@ -49,7 +57,7 @@ describe('QuestsPage', () => {
 
   test('(-) при переключении на Weekly daily-квест "знак пешеходного" не отображается', async () => {
     render(<QuestsPage />);
-    fireEvent.click(screen.getByRole('button', { name: /weekly/i }));
+    fireEvent.click(screen.getByRole("button", { name: /weekly/i }));
     await waitFor(() => {
       expect(screen.getByText(/яркий алый цветок/i)).toBeInTheDocument();
     });

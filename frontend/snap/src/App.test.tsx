@@ -1,5 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 import App from "./App";
 
 jest.mock("./contexts/AuthContext", () => {
@@ -36,9 +42,11 @@ describe("App", () => {
     });
   });
 
-  test("(+) панель навигации .tabbar всегда отображается", () => {
+  // Синхронная проверка — делаем async и сбрасываем pending-промисы в конце
+  test("(+) панель навигации .tabbar всегда отображается", async () => {
     const { container } = render(<App />);
     expect(container.querySelector(".tabbar")).toBeInTheDocument();
+    await act(async () => {});
   });
 
   test("(+) клик на Stars переходит на QuestsPage", async () => {
@@ -75,15 +83,16 @@ describe("App", () => {
 
   test("(-) на домашнем экране нет кнопок Daily/Weekly", async () => {
     render(<App />);
-    // Ждём загрузки ленты: тег поста 'Синий цветок' появляется только после загрузки
     await waitFor(() => {
       expect(screen.getByText("Синий цветок")).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: /daily/i })).toBeNull();
   });
 
-  test('(-) на домашнем экране нет кнопки "Глобальный"', () => {
+  // Синхронная проверка — делаем async и сбрасываем pending-промисы в конце
+  test('(-) на домашнем экране нет кнопки "Глобальный"', async () => {
     render(<App />);
     expect(screen.queryByText("Глобальный")).toBeNull();
+    await act(async () => {});
   });
 });
