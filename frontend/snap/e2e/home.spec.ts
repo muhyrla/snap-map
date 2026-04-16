@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Home — домашняя страница', () => {
+test.describe('Домашняя страница', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.header')).toBeVisible();
@@ -50,7 +50,7 @@ test.describe('Home — домашняя страница', () => {
   });
 });
 
-test.describe('Tabbar — навигация между экранами', () => {
+test.describe('Навигация между экранами (таббар)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });

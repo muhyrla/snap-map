@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('QuestsPage', () => {
+test.describe('Страница квестов', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.click('img[alt="Stars"]');

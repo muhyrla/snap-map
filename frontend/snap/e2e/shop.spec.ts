@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Shop — страница магазина', () => {
+test.describe('Магазин', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.click('img[alt="Shop"]');
