@@ -42,6 +42,15 @@ s3:
   secretKey: ${S3_SECRET_KEY:minioadmin}
   bucket: ${S3_BUCKET:snapmap}
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    template:
+      routing-key: ${RABBITMQ_ROUTING_KEY:moderation.tasks}
+      exchange: ${RABBITMQ_EXCHANGE:moderation.exchange}
+
 redis:
   host: ${REDIS_HOST:127.0.0.1}
   port: ${REDIS_PORT:6379}
