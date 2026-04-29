@@ -4,7 +4,10 @@ interface HeaderProps {
   onSettings?: () => void;
 }
 
-export function Header({ username = 'Пользователь', balance = 'стопитсот денег', onSettings }: HeaderProps) {
+export function Header({ username, balance, onSettings }: HeaderProps = {}) {
+  const displayUsername = username || 'Пользователь';
+  const displayBalance = balance || 'стопитсот денег';
+
   return (
     <header className="header">
       <div className="header__row">
@@ -23,9 +26,9 @@ export function Header({ username = 'Пользователь', balance = 'ст�
           <div className="avatar" aria-hidden="true">
             <span className="avatar__icon">👤</span>
           </div>
-          <div className="username">{username}</div>
+          <div className="username">{displayUsername}</div>
         </div>
-        <button className="money-button">{balance}</button>
+        <button className="money-button">{displayBalance}</button>
       </div>
     </header>
   );

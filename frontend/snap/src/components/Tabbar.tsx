@@ -1,28 +1,43 @@
 import React from 'react';
 import '../styles/_tabbar.scss';
 
-type LegacyScreen = 'home' | 'quests';
-type ActiveScreen = 'home' | 'quests' | 'shop';
+type ScreenType = 'home' | 'quests' | 'leaderboard' | 'shop';
 
 interface TabbarProps {
-  // old API
-  screen?: LegacyScreen;
-  setScreen?: (screen: LegacyScreen) => void;
-  // new API used in pages
-  active?: ActiveScreen;
+  screen?: ScreenType;
+  setScreen?: (screen: ScreenType) => void;
+  active?: ScreenType;
   onHome?: () => void;
 }
 
-export const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen, active, onHome }) => {
-  const current = active ?? screen ?? 'home';
+const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen, active, onHome }) => {
+  // Поддержка обоих вариантов использования
+  const currentScreen = screen ?? active;
 
-  const goHome = () => {
-    if (onHome) return onHome();
-    if (setScreen) return setScreen('home');
+  const handleHomeClick = () => {
+    if (setScreen) {
+      setScreen('home');
+    } else if (onHome) {
+      onHome();
+    }
   };
 
-  const goQuests = () => {
-    if (setScreen) return setScreen('quests');
+  const handleQuestsClick = () => {
+    if (setScreen) {
+      setScreen('quests');
+    }
+  };
+
+  const handleLeaderboardClick = () => {
+    if (setScreen) {
+      setScreen('leaderboard');
+    }
+  };
+
+  const handleShopClick = () => {
+    if (setScreen) {
+      setScreen('shop');
+    }
   };
 
   return (
@@ -31,13 +46,14 @@ export const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen, active, onHom
         <img
           src="/icons/fluent_home-24-filled.svg"
           alt="Home"
-          className={`tab-icon ${current === 'home' ? 'active' : ''}`}
-          onClick={goHome}
+          className={`tab-icon ${currentScreen === 'home' ? 'active' : ''}`}
+          onClick={handleHomeClick}
         />
         <img
           src="/icons/Vector.svg"
           alt="Leaderboard"
-          className="tab-icon"
+          className={`tab-icon ${currentScreen === 'leaderboard' ? 'active' : ''}`}
+          onClick={handleLeaderboardClick}
         />
         <div className="camera-icon-wrapper">
           <img
@@ -49,13 +65,14 @@ export const Tabbar: React.FC<TabbarProps> = ({ screen, setScreen, active, onHom
         <img
           src="/icons/streamline-flex_multiple-stars-solid.svg"
           alt="Stars"
-          className={`tab-icon ${current === 'quests' ? 'active' : ''}`}
-          onClick={goQuests}
+          className={`tab-icon ${currentScreen === 'quests' ? 'active' : ''}`}
+          onClick={handleQuestsClick}
         />
         <img
           src="/icons/solar_shop-bold.svg"
           alt="Shop"
-          className={`tab-icon ${current === 'shop' ? 'active' : ''}`}
+          className={`tab-icon ${currentScreen === 'shop' ? 'active' : ''}`}
+          onClick={handleShopClick}
         />
       </div>
     </div>

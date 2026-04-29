@@ -10,7 +10,6 @@ export interface QuestItem {
   tab: Tab;
 }
 
-// Моки данных квестов
 const QUESTS_MOCK: QuestItem[] = [
   { id:'1', title:'яркий алый цветок', points:115, difficulty:'weekly', tab:'weekly' },
   { id:'2', title:'пышный красный', points:115, difficulty:'weekly', tab:'weekly' },
@@ -28,23 +27,16 @@ const QUESTS_MOCK: QuestItem[] = [
   { id:'12', title:'бутылка карачинской', points:777, difficulty:'special', tab:'special'},
 ];
 
-/**
- * Получить все квесты
- * Сейчас возвращает моки, позже можно заменить на реальный API вызов
- */
+
 export async function getQuests(): Promise<QuestItem[]> {
-  // TODO: Заменить на реальный API вызов
-  // Пример:
+  
   // const response = await fetch('/api/quests');
   // return response.json();
   
   return Promise.resolve(QUESTS_MOCK);
 }
 
-/**
- * Получить квесты по типу таба
- * @param tab - тип таба ('daily' | 'weekly' | 'special')
- */
+
 export async function getQuestsByTab(tab: Tab): Promise<QuestItem[]> {
   const allQuests = await getQuests();
   return allQuests.filter(quest => quest.tab === tab);
