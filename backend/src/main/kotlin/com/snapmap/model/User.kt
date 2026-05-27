@@ -27,7 +27,10 @@ class User(
     
     @Column(name = "balance", nullable = false)
     var balance: BigDecimal = BigDecimal.ZERO,
-    
+
+    @Column(name = "onboarded", nullable = false)
+    var onboarded: Boolean = false,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     var role: UserRole = UserRole.USER
