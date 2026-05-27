@@ -4,14 +4,15 @@ import Onboarding from './pages/Onboarding';
 import FeedScreen from './pages/FeedScreen';
 import { QuestsListScreen, QuestDetailScreen } from './pages/QuestsScreen';
 import LeaderboardScreen from './pages/Leaderboard';
+import MarketScreen from './pages/MarketScreen';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
 import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
 import { getStats, StatsResponse } from './services/statsService';
 import { QuestDto, skipQuest, rerollQuest, getRerolls } from './services/questsService';
+import { ShopItemDto, PurchaseDto } from './services/shopService';
 import './styles/style.scss';
 
 const RankPlaceholder   = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Рейтинг — в разработке</div></div>;
-const MarketPlaceholder = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Маркет — в разработке</div></div>;
 
 export default function App() {
   const { isLoading, onboarded, backendUser, initDataRaw } = useAuth();
@@ -125,7 +126,16 @@ export default function App() {
             onOpen={setQuestDetail}
           />
         );
-      case 'market': return <MarketPlaceholder/>;
+      case 'market':
+        return (
+          <MarketScreen
+            balance={user.balance}
+            initData={initDataRaw}
+            onPurchase={(_item: ShopItemDto, _result: PurchaseDto) => {
+              setUser(u => ({ ...u, balance: u.balance - _item.price }));
+            }}
+          />
+        );
       default:       return null;
     }
   };
