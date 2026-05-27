@@ -38,6 +38,12 @@ class User(
     @Column(name = "last_activity_date")
     var lastActivityDate: LocalDate? = null,
 
+    @Column(name = "rerolls_left", nullable = false)
+    var rerollsLeft: Int = 3,
+
+    @Column(name = "rerolls_reset_date")
+    var rerollsResetDate: LocalDate? = null,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     var role: UserRole = UserRole.USER

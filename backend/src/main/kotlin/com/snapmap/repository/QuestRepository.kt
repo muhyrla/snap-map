@@ -1,6 +1,7 @@
 package com.snapmap.repository
 
 import com.snapmap.model.Quest
+import com.snapmap.model.QuestType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -9,10 +10,14 @@ import java.util.*
 
 @Repository
 interface QuestRepository : JpaRepository<Quest, Long> {
-    
+
     fun findByName(name: String): Optional<Quest>
-    
+
     @Query("SELECT q FROM Quest q WHERE q.metadata = :metadata AND q.metadata IS NOT NULL")
     fun findByMetadata(@Param("metadata") metadata: String): Optional<Quest>
+
+    fun findAllByType(type: QuestType): List<Quest>
+
+    fun findAllByTypeAndIdNot(type: QuestType, id: Long): List<Quest>
 }
 
