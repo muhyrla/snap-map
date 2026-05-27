@@ -57,7 +57,7 @@ export interface LeaderboardEntry {
   rank: number;
   name: string;
   snaps: number;
-  isMe?: boolean;
+  isMe: boolean;
 }
 
 export interface UserPhoto {
@@ -101,26 +101,26 @@ export const defaultUser: AppUser = {
 };
 
 export const leaderboardGlobal: LeaderboardEntry[] = [
-  { rank: 1,  name: 'Рустам',          snaps: 999 },
-  { rank: 2,  name: 'Осерлис',         snaps: 978 },
-  { rank: 3,  name: 'Захар',           snaps: 869 },
-  { rank: 4,  name: 'Морфи',           snaps: 758 },
-  { rank: 5,  name: 'Михурла',         snaps: 674, isMe: true },
-  { rank: 6,  name: 'Александр',       snaps: 523 },
-  { rank: 7,  name: 'Камчатский краб', snaps: 479 },
-  { rank: 8,  name: 'Никитос',         snaps: 435 },
-  { rank: 9,  name: 'Полина_88',       snaps: 401 },
-  { rank: 10, name: 'Аркадий',         snaps: 388 },
+  { rank: 1,  name: 'Рустам',          snaps: 999, isMe: false },
+  { rank: 2,  name: 'Осерлис',         snaps: 978, isMe: false },
+  { rank: 3,  name: 'Захар',           snaps: 869, isMe: false },
+  { rank: 4,  name: 'Морфи',           snaps: 758, isMe: false },
+  { rank: 5,  name: 'Михурла',         snaps: 674, isMe: true  },
+  { rank: 6,  name: 'Александр',       snaps: 523, isMe: false },
+  { rank: 7,  name: 'Камчатский краб', snaps: 479, isMe: false },
+  { rank: 8,  name: 'Никитос',         snaps: 435, isMe: false },
+  { rank: 9,  name: 'Полина_88',       snaps: 401, isMe: false },
+  { rank: 10, name: 'Аркадий',         snaps: 388, isMe: false },
 ];
 
 export const leaderboardLocal: LeaderboardEntry[] = [
-  { rank: 1, name: 'Рустам',    snaps: 999 },
-  { rank: 2, name: 'Михурла',   snaps: 674, isMe: true },
-  { rank: 3, name: 'Соня_к',    snaps: 612 },
-  { rank: 4, name: 'Денчик',    snaps: 540 },
-  { rank: 5, name: 'омичка_22', snaps: 487 },
-  { rank: 6, name: 'фотограф',  snaps: 432 },
-  { rank: 7, name: 'Зефирка',   snaps: 401 },
+  { rank: 1, name: 'Рустам',    snaps: 999, isMe: false },
+  { rank: 2, name: 'Михурла',   snaps: 674, isMe: true  },
+  { rank: 3, name: 'Соня_к',    snaps: 612, isMe: false },
+  { rank: 4, name: 'Денчик',    snaps: 540, isMe: false },
+  { rank: 5, name: 'омичка_22', snaps: 487, isMe: false },
+  { rank: 6, name: 'фотограф',  snaps: 432, isMe: false },
+  { rank: 7, name: 'Зефирка',   snaps: 401, isMe: false },
 ];
 
 export const feedPosts: FeedPost[] = [

@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import Onboarding from './pages/Onboarding';
 import FeedScreen from './pages/FeedScreen';
 import { QuestsListScreen, QuestDetailScreen } from './pages/QuestsScreen';
+import LeaderboardScreen from './pages/Leaderboard';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
 import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
 import { getStats, StatsResponse } from './services/statsService';
@@ -104,7 +105,7 @@ export default function App() {
             onRefresh={() => showToast('Лента обновлена')}
           />
         );
-      case 'rank':   return <RankPlaceholder/>;
+      case 'rank':   return <LeaderboardScreen/>;
       case 'quests':
         return questDetail ? (
           <QuestDetailScreen
