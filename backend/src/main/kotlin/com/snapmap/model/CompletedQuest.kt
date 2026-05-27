@@ -1,6 +1,7 @@
 package com.snapmap.model
 
 import jakarta.persistence.*
+import java.time.LocalDate
 
 @Entity
 @Table(name = "completed_quests")
@@ -22,6 +23,9 @@ class CompletedQuest(
     var description: String? = null,
     
     @Column(name = "allow_feed_photos", nullable = false)
-    var allowFeedPhotos: Boolean = false
+    var allowFeedPhotos: Boolean = false,
+
+    @Column(name = "completed_at", nullable = false)
+    var completedAt: LocalDate = LocalDate.now()
 )
 

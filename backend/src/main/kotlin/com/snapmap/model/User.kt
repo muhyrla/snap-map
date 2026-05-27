@@ -2,6 +2,7 @@ package com.snapmap.model
 
 import jakarta.persistence.*
 import java.math.BigDecimal
+import java.time.LocalDate
 
 @Entity
 @Table(name = "users")
@@ -30,6 +31,12 @@ class User(
 
     @Column(name = "onboarded", nullable = false)
     var onboarded: Boolean = false,
+
+    @Column(name = "streak", nullable = false)
+    var streak: Int = 0,
+
+    @Column(name = "last_activity_date")
+    var lastActivityDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
