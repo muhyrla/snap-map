@@ -1,44 +1,46 @@
-import { Difficulty } from '../components/Quests';
+const API_BASE = process.env.REACT_APP_API_URL ?? '';
 
-export type Tab = 'daily' | 'weekly' | 'special';
-
-export interface QuestItem {
-  id: string;
-  title: string;
-  points: number;
-  difficulty: Difficulty;
-  tab: Tab;
+function authHeader(initData: string) {
+  return { Authorization: `tma ${initData}` };
 }
 
-const QUESTS_MOCK: QuestItem[] = [
-  { id:'1', title:'яркий алый цветок', points:115, difficulty:'weekly', tab:'weekly' },
-  { id:'2', title:'пышный красный', points:115, difficulty:'weekly', tab:'weekly' },
-  { id:'3', title:'синий цветок', points:208, difficulty:'weekly', tab:'weekly' },
-  { id:'4', title:'желтый цветок', points:150, difficulty:'weekly', tab:'weekly' },
-
-  { id:'5', title:'свиристели', points:115, difficulty:'daily', tab:'daily' },
-  { id:'6', title:'знак пешеходного', points:115, difficulty:'daily', tab:'daily' },
-  { id:'7', title:'колесо обозрения', points:208, difficulty:'daily', tab:'daily' },
-  { id:'8', title:'галоша', points:152, difficulty:'daily', tab:'daily' },
-  { id:'9', title: 'МИШИН НОСЯРА', points:0.5, difficulty:'weekly', tab:'daily' },
-
-  { id:'10', title:'скурагов гег', points:315, difficulty:'special', tab:'special' },
-  { id:'11', title:'беляшка гег', points:315, difficulty:'special', tab:'special' },
-  { id:'12', title:'бутылка карачинской', points:777, difficulty:'special', tab:'special'},
-];
-
-
-export async function getQuests(): Promise<QuestItem[]> {
-  
-  // const response = await fetch('/api/quests');
-  // return response.json();
-  
-  return Promise.resolve(QUESTS_MOCK);
+export interface QuestDto {
+  id: number;
+  name: string;
+  type: 'daily' | 'weekly' | 'special';
+  emoji: string | null;
+  description: string | null;
+  difficulty: number | null;
+  reward: number;
+  isCompleted: boolean;
+  isSkipped: boolean;
 }
 
-
-export async function getQuestsByTab(tab: Tab): Promise<QuestItem[]> {
-  const allQuests = await getQuests();
-  return allQuests.filter(quest => quest.tab === tab);
+export async function getQuests(initData: string, type: 'daily' | 'weekly' | 'special'): Promise<QuestDto[]> {
+  const res = await fetch(`${API_BASE}/api/quests?type=${type}`, { headers: authHeader(initData) });
+  if (!res.ok) throw new Error('Failed to fetch quests');
+  return res.json();
 }
 
+export async function skipQuest(initData: string, questId: number): Promise<void> {
+  await fetch(`${API_BASE}/api/quests/${questId}/skip`, {
+    method: 'POST',
+    headers: authHeader(initData),
+  });
+}
+
+export async function rerollQuest(initData: string, currentQuestId: number): Promise<QuestDto> {
+  const res = await fetch(`${API_BASE}/api/quests/reroll`, {
+    method: 'POST',
+    headers: { ...authHeader(initData), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentQuestId }),
+  });
+  if (!res.ok) throw new Error('No rerolls left');
+  return res.json();
+}
+
+export async function getRerolls(initData: string): Promise<{ rerollsLeft: number }> {
+  const res = await fetch(`${API_BASE}/api/quests/rerolls`, { headers: authHeader(initData) });
+  if (!res.ok) throw new Error('Failed to fetch rerolls');
+  return res.json();
+}

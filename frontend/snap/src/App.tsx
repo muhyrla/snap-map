@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import Onboarding from './pages/Onboarding';
 import FeedScreen from './pages/FeedScreen';
+import { QuestsListScreen, QuestDetailScreen } from './pages/QuestsScreen';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
 import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
 import { getStats, StatsResponse } from './services/statsService';
+import { QuestDto, skipQuest, rerollQuest, getRerolls } from './services/questsService';
 import './styles/style.scss';
 
 const RankPlaceholder   = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Рейтинг — в разработке</div></div>;
-const QuestsPlaceholder = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Квесты — в разработке</div></div>;
 const MarketPlaceholder = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Маркет — в разработке</div></div>;
 
 export default function App() {
@@ -23,6 +24,8 @@ export default function App() {
   const [posts, setPosts] = useState<FeedPost[]>(initPosts);
   const [notifs, setNotifs] = useState<Notification[]>(initNotifs);
   const [toast, setToast] = useState<string | null>(null);
+  const [questDetail, setQuestDetail] = useState<QuestDto | null>(null);
+  const [rerollsLeft, setRerollsLeft] = useState(3);
 
   useEffect(() => {
     localStorage.setItem('snapmap_user', JSON.stringify(user));
@@ -43,10 +46,27 @@ export default function App() {
   // Статистика с бэкенда
   useEffect(() => {
     if (!initDataRaw || !onboarded) return;
-    getStats(initDataRaw)
-      .then(setStats)
-      .catch(() => {/* бэкенд недоступен — используем моковые данные */});
+    getStats(initDataRaw).then(setStats).catch(() => {});
+    getRerolls(initDataRaw).then(r => setRerollsLeft(r.rerollsLeft)).catch(() => {});
   }, [initDataRaw, onboarded]);
+
+  const handleReroll = useCallback(async (q: QuestDto): Promise<QuestDto | null> => {
+    if (!initDataRaw) return null;
+    try {
+      const next = await rerollQuest(initDataRaw, q.id);
+      showToast(`Сменили на «${next.name}»`);
+      return next;
+    } catch {
+      showToast('Реролов не осталось');
+      return null;
+    }
+  }, [initDataRaw]); // eslint-disable-line
+
+  const handleSkip = useCallback(async (q: QuestDto) => {
+    if (initDataRaw) await skipQuest(initDataRaw, q.id).catch(() => {});
+    setQuestDetail(null);
+    showToast(`Квест «${q.name}» пропущен`);
+  }, [initDataRaw]); // eslint-disable-line
 
   const showToast = (text: string) => {
     setToast(text);
@@ -85,7 +105,25 @@ export default function App() {
           />
         );
       case 'rank':   return <RankPlaceholder/>;
-      case 'quests': return <QuestsPlaceholder/>;
+      case 'quests':
+        return questDetail ? (
+          <QuestDetailScreen
+            q={questDetail}
+            rerollsLeft={rerollsLeft}
+            initData={initDataRaw}
+            onBack={() => setQuestDetail(null)}
+            onShoot={() => showToast('Камера — в разработке')}
+            onReroll={handleReroll}
+            onSkip={handleSkip}
+          />
+        ) : (
+          <QuestsListScreen
+            initData={initDataRaw}
+            dailyDone={stats?.daily_done ? Number(stats.daily_done) : user.dailyDone}
+            dailyTotal={stats?.daily_total ?? user.dailyTotal}
+            onOpen={setQuestDetail}
+          />
+        );
       case 'market': return <MarketPlaceholder/>;
       default:       return null;
     }
