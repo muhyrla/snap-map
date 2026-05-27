@@ -1,83 +1,49 @@
-export interface ShopItem {
+const API_BASE = process.env.REACT_APP_API_URL ?? '';
+
+function authHeader(initData: string) {
+  return { Authorization: `tma ${initData}` };
+}
+
+export interface ShopItemDto {
   id: number;
   title: string;
-  description: string;
-  price: string;
-  priceValue: number; // числовое значение для проверки баланса
-  imageUrl?: string;
-  category?: string;
+  description: string | null;
+  price: number;
+  discount: number;
+  category: string;
+  imageUrl: string | null;
+  emoji: string | null;
 }
 
-export interface ShopStats {
-  completedQuests: number;
-  dailyCounter: number;
+export interface PurchaseDto {
+  id: number;
+  item: ShopItemDto;
+  code: string;
+  pricePaid: number;
+  purchasedAt: string;
 }
 
-// Моки данных для магазина
-const SHOP_ITEMS_MOCK: ShopItem[] = [
-  {
-    id: 1,
-    title: 'стим ключ ура',
-    description: 'бахай эти фотокарточки а мы потом придумаем зачем',
-    price: '500 SNS',
-    priceValue: 500,
-    imageUrl: undefined,
-  },
-  {
-    id: 2,
-    title: 'стим ключ ура',
-    description: 'бахай эти фотокарточки а мы потом придумаем зачем',
-    price: '500 SNS',
-    priceValue: 500,
-    imageUrl: undefined,
-  },
-  {
-    id: 3,
-    title: 'стим ключ ура',
-    description: 'бахай эти фотокарточки а мы потом придумаем зачем',
-    price: '500 SNS',
-    priceValue: 500,
-    imageUrl: undefined,
-  },
-  {
-    id: 4,
-    title: 'стим ключ ура',
-    description: 'бахай эти фотокарточки а мы потом придумаем зачем',
-    price: '500 SNS',
-    priceValue: 500,
-    imageUrl: undefined,
-  },
-];
-
-const SHOP_STATS_MOCK: ShopStats = {
-  completedQuests: 70,
-  dailyCounter: 2,
-};
-
-export async function getShopItems(): Promise<ShopItem[]> {
-  // const response = await fetch('/api/shop/items');
-  // return response.json();
-  
-  return Promise.resolve(SHOP_ITEMS_MOCK);
+export async function getMarketItems(initData: string, category?: string): Promise<ShopItemDto[]> {
+  const url = category
+    ? `${API_BASE}/api/market?category=${encodeURIComponent(category)}`
+    : `${API_BASE}/api/market`;
+  const res = await fetch(url, { headers: authHeader(initData) });
+  if (!res.ok) throw new Error('Failed to fetch market items');
+  return res.json();
 }
 
-export async function getShopStats(): Promise<ShopStats> {
-  // const response = await fetch('/api/shop/stats');
-  // return response.json();
-  
-  return Promise.resolve(SHOP_STATS_MOCK);
+export async function purchaseItem(initData: string, itemId: number): Promise<PurchaseDto> {
+  const res = await fetch(`${API_BASE}/api/market/${itemId}/purchase`, {
+    method: 'POST',
+    headers: authHeader(initData),
+  });
+  if (res.status === 400) throw new Error('insufficient_balance');
+  if (!res.ok) throw new Error('Purchase failed');
+  return res.json();
 }
 
-export async function buyItem(itemId: number): Promise<{ success: boolean; message?: string }> {
-  // const response = await fetch('/api/shop/buy', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ itemId }),
-  // });
-  // return response.json();
-  
-  // Мок успешной покупки
-  console.log('Покупка товара:', itemId);
-  return Promise.resolve({ success: true, message: 'Товар успешно куплен!' });
+export async function getPurchases(initData: string): Promise<PurchaseDto[]> {
+  const res = await fetch(`${API_BASE}/api/market/purchases`, { headers: authHeader(initData) });
+  if (!res.ok) throw new Error('Failed to fetch purchases');
+  return res.json();
 }
-
