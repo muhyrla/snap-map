@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { getMe, patchMe, MeResponse } from '../services/authService';
 
-// Типы для данных пользователя
 export interface User {
   id: number;
   firstName: string;
@@ -13,9 +13,12 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  backendUser: MeResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  onboarded: boolean;
   initDataRaw: string | null;
+  completeOnboarding: (city: string) => Promise<void>;
   login: (userData: User, initData?: string) => void;
   logout: () => void;
 }
@@ -24,28 +27,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-// Функция для парсинга initData из Telegram
 const parseInitData = (initDataRaw: string): User | null => {
   try {
     const params = new URLSearchParams(initDataRaw);
     const userParam = params.get('user');
-    
-    if (!userParam) {
-      return null;
-    }
-
+    if (!userParam) return null;
     const userData = JSON.parse(decodeURIComponent(userParam));
-    
     return {
       id: userData.id,
       firstName: userData.first_name || '',
@@ -55,101 +46,98 @@ const parseInitData = (initDataRaw: string): User | null => {
       authDate: parseInt(params.get('auth_date') || '0', 10),
       hash: params.get('hash') || '',
     };
-  } catch (error) {
-    console.error('Error parsing initData:', error);
+  } catch {
     return null;
   }
 };
 
-// Фейковые данные для демонстрации
-const getMockUser = (): User => {
-  return {
-    id: 123456789,
+const getMockInitData = (): { user: User; initData: string } => {
+  const mockId = 123456789;
+  const user: User = {
+    id: mockId,
     firstName: 'Иван',
     lastName: 'Иванов',
     username: 'ivan_user',
     photoUrl: '',
     authDate: Math.floor(Date.now() / 1000),
-    hash: 'mock_hash_' + Math.random().toString(36).substring(7),
+    hash: 'mock_hash',
   };
+  const initData = `user=${encodeURIComponent(JSON.stringify({
+    id: mockId,
+    first_name: user.firstName,
+    last_name: user.lastName,
+    username: user.username,
+  }))}&auth_date=${user.authDate}&hash=${user.hash}`;
+  return { user, initData };
 };
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [backendUser, setBackendUser] = useState<MeResponse | null>(null);
+  const [onboarded, setOnboarded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const init = async () => {
       try {
-        // Пытаемся использовать реальный Telegram SDK
-        let telegramInitData: string | null = null;
-        
+        let rawData: string | null = null;
+
+        // 1. Пробуем Telegram SDK
         try {
-          // Динамический импорт, чтобы не ломать сборку, если пакет не установлен
-          // Используем type assertion для обхода проверки типов при статическом анализе
           const sdkModuleName = '@telegram-apps/sdk';
-          const sdkModule = await import(/* @vite-ignore */ sdkModuleName) as any;
-          const { retrieveLaunchParams } = sdkModule;
-          const launchParams = retrieveLaunchParams();
-          const rawData = launchParams?.initDataRaw;
-          
-          // Проверяем, что rawData это строка
-          if (rawData && typeof rawData === 'string') {
-            telegramInitData = rawData;
-            setInitDataRaw(telegramInitData);
+          const { retrieveLaunchParams } = await import(/* @vite-ignore */ sdkModuleName) as any;
+          const lp = retrieveLaunchParams();
+          if (lp?.initDataRaw && typeof lp.initDataRaw === 'string') {
+            rawData = lp.initDataRaw;
           }
-        } catch (error) {
-          // Если пакет не установлен или ошибка, используем фейковые данные
-          console.log('Telegram SDK не доступен, используем демо-режим');
+        } catch {}
+
+        // 2. Fallback на localStorage
+        if (!rawData) {
+          rawData = localStorage.getItem('initDataRaw');
         }
 
-        // Если есть данные от Telegram, парсим их
-        if (telegramInitData) {
-          const parsedUser = parseInitData(telegramInitData);
-          if (parsedUser) {
-            setUser(parsedUser);
-            // Сохраняем в localStorage для сохранения сессии
-            localStorage.setItem('user', JSON.stringify(parsedUser));
-            localStorage.setItem('initDataRaw', telegramInitData);
-            setIsLoading(false);
-            return;
-          }
+        // 3. Fallback на моковые данные для локальной разработки
+        if (!rawData) {
+          const mock = getMockInitData();
+          rawData = mock.initData;
+          setUser(mock.user);
+        } else {
+          const parsed = parseInitData(rawData);
+          if (parsed) setUser(parsed);
         }
 
-        // Проверяем localStorage на наличие сохраненной сессии
-        const savedUser = localStorage.getItem('user');
-        const savedInitData = localStorage.getItem('initDataRaw');
-        
-        if (savedUser && savedInitData) {
-          setUser(JSON.parse(savedUser));
-          setInitDataRaw(savedInitData);
-          setIsLoading(false);
-          return;
-        }
+        setInitDataRaw(rawData);
+        localStorage.setItem('initDataRaw', rawData);
 
-        // Демо-режим: автоматически авторизуем с фейковыми данными (автологин)
-        // Это скрывает страницу авторизации и регистрирует пользователя в системе автоматически.
-        const mockUser = getMockUser();
-        const mockInitData = `user=${encodeURIComponent(JSON.stringify({
-          id: mockUser.id,
-          first_name: mockUser.firstName,
-          last_name: mockUser.lastName,
-          username: mockUser.username,
-        }))}&auth_date=${mockUser.authDate}&hash=${mockUser.hash}`;
-        setUser(mockUser);
-        setInitDataRaw(mockInitData);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        localStorage.setItem('initDataRaw', mockInitData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error initializing auth:', error);
+        // 4. Запрашиваем бэкенд — если недоступен, смотрим localStorage
+        try {
+          const me = await getMe(rawData);
+          setBackendUser(me);
+          setOnboarded(me.onboarded);
+        } catch {
+          setOnboarded(localStorage.getItem('snapmap_onboarded') === '1');
+        }
+      } finally {
         setIsLoading(false);
       }
     };
 
-    initializeAuth();
+    init();
   }, []);
+
+  const completeOnboarding = async (city: string) => {
+    if (!initDataRaw) return;
+    try {
+      const result = await patchMe(initDataRaw, city);
+      setBackendUser(prev => prev ? { ...prev, city: result.city, onboarded: true } : null);
+    } catch {
+      // бэкенд недоступен — сохраняем локально
+    }
+    setOnboarded(true);
+    localStorage.setItem('snapmap_onboarded', '1');
+  };
 
   const login = (userData: User, initData?: string) => {
     setUser(userData);
@@ -157,27 +145,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (initData) {
       setInitDataRaw(initData);
       localStorage.setItem('initDataRaw', initData);
-    } else if (initDataRaw) {
-      localStorage.setItem('initDataRaw', initDataRaw);
     }
   };
 
   const logout = () => {
     setUser(null);
+    setBackendUser(null);
+    setOnboarded(false);
     setInitDataRaw(null);
     localStorage.removeItem('user');
     localStorage.removeItem('initDataRaw');
+    localStorage.removeItem('snapmap_onboarded');
   };
 
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    initDataRaw,
-    login,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      user,
+      backendUser,
+      isAuthenticated: !!user,
+      isLoading,
+      onboarded,
+      initDataRaw,
+      completeOnboarding,
+      login,
+      logout,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
-
