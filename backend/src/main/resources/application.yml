@@ -3,9 +3,10 @@ spring:
     name: snap-map-backend
   
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snap-map}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:postgres}
+    # Railway даёт PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD
+    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5432}/${PGDATABASE:snap-map}
+    username: ${PGUSER:postgres}
+    password: ${PGPASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -52,9 +53,10 @@ s3:
       exchange: ${RABBITMQ_EXCHANGE:moderation.exchange}
 
 redis:
-  host: ${REDIS_HOST:127.0.0.1}
-  port: ${REDIS_PORT:6379}
-  password: ${REDIS_PASSWORD:}
+  # Railway даёт REDISHOST/REDISPORT/REDISPASSWORD
+  host: ${REDISHOST:${REDIS_HOST:127.0.0.1}}
+  port: ${REDISPORT:${REDIS_PORT:6379}}
+  password: ${REDISPASSWORD:${REDIS_PASSWORD:}}
   database: ${REDIS_DATABASE:0}
   queue-key: ${REDIS_QUEUE_KEY:moderation:queue}
   status-key-prefix: ${REDIS_STATUS_KEY_PREFIX:moderation:status}
