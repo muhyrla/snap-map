@@ -1,102 +1,71 @@
-@use './variables' as vars;
+*,*::before,*::after { box-sizing: border-box; }
 
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-
-body {
+html, body {
   margin: 0;
-  background: #EDEFF3;
-  color: vars.$text;
-  font-family: 'Open Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.35;
+  padding: 0;
+  height: 100%;
+  font-family: 'Onest', 'Onest Fallback', -apple-system, system-ui, sans-serif;
+  color: var(--dark);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
-/* корневой контейнер приложения (Telegram WebApp) */
-.app-container {
-  min-height: 100vh;
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+input, textarea { font-family: inherit; }
+
+::-webkit-scrollbar { width: 0; height: 0; }
+
+#root {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
-/* основной экран/страница */
-.screen {
-  width: 100%;
-  min-height: 100%;
-  padding: 0 12px 16px;
-  background-color: #EDEFF3;
-}
-
-/* верхний белый блок как карточка */
-.screen-header-block {
-  margin: 0 -12px 16px;
-  padding: 41px 12px 16px;
-  height: 243px;
-  background-color: #ffffff;
-  border-radius: 0 0 24px 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-/* утилиты */
-.small { color: vars.$muted; font-size: 12px; }
-.row { display: flex; align-items: center; }
-.gap10 { gap: 10px; }
-.mt8 { margin-top: 8px; }
-.mt10 { margin-top: 10px; }
-.hr { height: 1px; background: #e6e6e6; margin: 12px 0; }
-
-/* профиль (шапка) */
-.profile {
+.app-root {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  background: vars.$card;
-  border-radius: vars.$radius;
-  padding: 10px 12px;
-}
-.profile .avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #ddd;
-  display: grid;
-  place-items: center;
-}
-.profile .user { margin-right: auto; }
-.profile .name { font-weight: 600; }
-.profile .gear {
-  border: 0;
-  background: transparent;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  height: 100vh;
 }
 
-/* заголовки */
-.headline { margin: 12px 0; }
-.title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  word-break: break-word;
-}
-.subtitle {
-  margin: 6px 0 0;
-  color: vars.$muted;
-  font-size: 12px;
+.screen-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
 }
 
-/* список */
-.list { display: grid; gap: 6px; }
-
-/* доп. инфо внизу */
-.footer-info { margin: 14px 0 90px; }
-.footer-info .timer {
-  color: #09c55c;
-  font-weight: 700;
-  text-align: center;
-  margin-top: 6px;
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
 }
+
+.scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.has-floating-nav .scroll { padding-bottom: 108px; }
