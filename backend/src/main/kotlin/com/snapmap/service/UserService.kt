@@ -28,6 +28,14 @@ class UserService(
     )
 
     @Transactional
+    fun completeOnboarding(initData: String, city: String): User {
+        val user = createOrUpdateUser(initData)
+        user.city = city
+        user.onboarded = true
+        return userRepository.save(user)
+    }
+
+    @Transactional
     fun createOrUpdateUser(initData: String): User {
         val validationResult = authService.verify(initData)
         
