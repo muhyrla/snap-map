@@ -96,6 +96,87 @@ class MarketService(
         }
     }
 
+    // ─── Админские операции над товарами ────────────────────────────────
+
+    /** Полный админский DTO товара (в т.ч. active, для управления). */
+    data class AdminShopItemDto(
+        val id: Long,
+        val title: String,
+        val description: String?,
+        val price: Int,
+        val discount: Int,
+        val category: String,
+        val imageUrl: String?,
+        val emoji: String?,
+        val active: Boolean
+    )
+
+    data class ShopItemInput(
+        val title: String = "",
+        val description: String? = null,
+        val price: Int? = null,
+        val discount: Int? = null,
+        val category: String? = null,
+        val imageUrl: String? = null,
+        val emoji: String? = null,
+        val active: Boolean? = null
+    )
+
+    fun adminFindAll(): List<AdminShopItemDto> =
+        shopItemRepository.findAll().map { it.toAdminDto() }
+
+    @Transactional
+    fun adminCreate(input: ShopItemInput): AdminShopItemDto {
+        val item = ShopItem(
+            title       = input.title,
+            description = input.description,
+            price       = BigDecimal.valueOf((input.price ?: 0).toLong()),
+            discount    = input.discount ?: 0,
+            category    = input.category ?: "",
+            imageUrl    = input.imageUrl,
+            emoji       = input.emoji,
+            active      = input.active ?: true
+        )
+        return shopItemRepository.save(item).toAdminDto()
+    }
+
+    @Transactional
+    fun adminUpdate(id: Long, input: ShopItemInput): AdminShopItemDto {
+        val item = shopItemRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Item $id not found") }
+
+        input.title.let { if (it.isNotBlank()) item.title = it }
+        input.description?.let { item.description = it }
+        input.price?.let { item.price = BigDecimal.valueOf(it.toLong()) }
+        input.discount?.let { item.discount = it }
+        input.category?.let { item.category = it }
+        input.imageUrl?.let { item.imageUrl = it }
+        input.emoji?.let { item.emoji = it }
+        input.active?.let { item.active = it }
+
+        return shopItemRepository.save(item).toAdminDto()
+    }
+
+    @Transactional
+    fun adminDelete(id: Long) {
+        if (!shopItemRepository.existsById(id)) {
+            throw IllegalArgumentException("Item $id not found")
+        }
+        shopItemRepository.deleteById(id)
+    }
+
+    private fun ShopItem.toAdminDto() = AdminShopItemDto(
+        id          = id!!,
+        title       = title,
+        description = description,
+        price       = price.toInt(),
+        discount    = discount,
+        category    = category,
+        imageUrl    = imageUrl,
+        emoji       = emoji,
+        active      = active
+    )
+
     private fun ShopItem.toDto() = ShopItemDto(
         id          = id!!,
         title       = title,

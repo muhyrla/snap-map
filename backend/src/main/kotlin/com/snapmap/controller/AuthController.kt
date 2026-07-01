@@ -41,7 +41,8 @@ class AuthController(
                 "tg_fullname"  to user.tgFullname,
                 "city"         to user.city,
                 "balance"      to user.balance,
-                "onboarded"    to user.onboarded
+                "onboarded"    to user.onboarded,
+                "role"         to user.role.name
             ))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("error" to e.message))

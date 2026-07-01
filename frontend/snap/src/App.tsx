@@ -5,6 +5,7 @@ import FeedScreen from './pages/FeedScreen';
 import { QuestsListScreen, QuestDetailScreen } from './pages/QuestsScreen';
 import LeaderboardScreen from './pages/Leaderboard';
 import MarketScreen from './pages/MarketScreen';
+import AdminScreen from './pages/AdminScreen';
 import SnapFlow from './pages/SnapFlow';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
 import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
@@ -30,6 +31,9 @@ export default function App() {
   const [rerollsLeft, setRerollsLeft] = useState(3);
   const [snapQuest, setSnapQuest] = useState<QuestDto | null>(null);
   const [questsVersion, setQuestsVersion] = useState(0);
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  const isAdmin = backendUser?.role === 'ADMIN';
 
   useEffect(() => {
     localStorage.setItem('snapmap_user', JSON.stringify(user));
@@ -117,6 +121,7 @@ export default function App() {
       }
       return;
     }
+    setShowAdmin(false);
     setTab(id);
   };
 
@@ -178,11 +183,13 @@ export default function App() {
         unread={unreadCount}
         activeQuests={4}
         onBell={() => showToast('Уведомления — в разработке')}
-        onGear={() => showToast('Настройки — в разработке')}
+        onGear={() => isAdmin ? setShowAdmin(true) : showToast('Настройки — в разработке')}
         onProfile={() => showToast('Профиль — в разработке')}
       />
       <div className="screen-wrap">
-        {renderScreen()}
+        {showAdmin
+          ? <AdminScreen initData={initDataRaw} onClose={() => setShowAdmin(false)} onToast={showToast}/>
+          : renderScreen()}
         {toast && <Toast text={toast}/>}
       </div>
       {snapQuest && (

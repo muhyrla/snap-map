@@ -16,6 +16,7 @@ export interface MeResponse {
   city: string | null;
   balance: number;
   onboarded: boolean;
+  role: 'USER' | 'ADMIN';
 }
 
 export async function getMe(initData: string): Promise<MeResponse> {

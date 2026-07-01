@@ -1,6 +1,7 @@
 package com.snapmap.service
 
 import com.snapmap.model.Quest
+import com.snapmap.model.QuestType
 import com.snapmap.repository.QuestRepository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
@@ -68,11 +69,14 @@ class QuestService(
         metadata: String? = null,
         difficulty: Int? = null,
         reward: BigDecimal? = null,
-        durationDays: Int? = null
+        durationDays: Int? = null,
+        type: QuestType? = null,
+        emoji: String? = null,
+        description: String? = null
     ): Quest {
         val existingQuest = questRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Quest with id $id not found") }
-        
+
         name?.let { newName ->
             val questWithSameName = questRepository.findByName(newName)
             if (questWithSameName.isPresent && questWithSameName.get().id != id) {
@@ -92,7 +96,10 @@ class QuestService(
         difficulty?.let { existingQuest.difficulty = it }
         reward?.let { rewardValue -> existingQuest.reward = rewardValue }
         durationDays?.let { existingQuest.durationDays = it }
-        
+        type?.let { existingQuest.type = it }
+        emoji?.let { existingQuest.emoji = it }
+        description?.let { existingQuest.description = it }
+
         return try {
             questRepository.save(existingQuest)
         } catch (e: DataIntegrityViolationException) {

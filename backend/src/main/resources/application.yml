@@ -50,6 +50,11 @@ cors:
 telegram:
   bot-token: ${SNAP_MAP_BOT_TOKEN:}
 
+admin:
+  # Список Telegram ID админов через запятую. Эти пользователи при входе
+  # получают роль ADMIN (источник истины — эта переменная).
+  tg-ids: ${ADMIN_TG_IDS:}
+
 s3:
   endpoint: ${S3_ENDPOINT:http://127.0.0.1:9000}
   region: ${S3_REGION:us-east-1}
