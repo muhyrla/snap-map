@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import boto3
+from botocore.config import Config as BotoConfig
 import redis
 import pika
 
@@ -78,6 +79,10 @@ s3_client = boto3.client(
 	aws_access_key_id=os.getenv("S3_ACCESS_KEY", "minioadmin"),
 	aws_secret_access_key=os.getenv("S3_SECRET_KEY", "minioadmin"),
 	region_name=os.getenv("S3_REGION", "us-east-1"),
+	# MinIO требует path-style адресацию (bucket в пути, а не в поддомене).
+	# Локально с IP-эндпоинтом boto3 и так использует path-style, но против
+	# DNS-хоста (Railway) без этого он ушёл бы в virtual-hosted и не разрезолвил бы host.
+	config=BotoConfig(signature_version="s3v4", s3={"addressing_style": "path"}),
 )
 
 

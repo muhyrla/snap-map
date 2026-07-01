@@ -32,7 +32,8 @@ spring:
       exchange: ${RABBITMQ_EXCHANGE:moderation.exchange}
 
 server:
-  port: 8080
+  # Railway задаёт порт через переменную PORT; локально по умолчанию 8080.
+  port: ${PORT:8080}
   servlet:
     context-path: /
 
