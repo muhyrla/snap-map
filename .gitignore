@@ -14,6 +14,8 @@ backend/**/*.ear
 backend/**/*.zip
 backend/**/*.tar.gz
 backend/**/*.rar
+# Gradle wrapper jar обязан быть в репе (нужен для сборки на Railway/CI).
+!backend/gradle/wrapper/gradle-wrapper.jar
 
 # Virtual machine crash logs
 backend/**/hs_err_pid*
