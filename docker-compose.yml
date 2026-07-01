@@ -1,5 +1,25 @@
 services:
 
+  # ── Reverse-proxy + автоматический HTTPS (Let's Encrypt) ──────────────
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+      - minio
+
+  # ── Spring Boot API ──────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -17,13 +37,16 @@ services:
       RABBITMQ_PORT: 5672
       RABBIT_USER: ${RABBIT_USER}
       RABBIT_PASS: ${RABBIT_PASS}
-      S3_ENDPOINT: http://minio:9000
+      # S3 наружу через поддомен s3.<DOMAIN>: браузер заливает фото по
+      # presigned-URL напрямую в MinIO, поэтому хост обязан быть публичным HTTPS.
+      S3_ENDPOINT: https://s3.${DOMAIN}
+      S3_PUBLIC_ENDPOINT: https://s3.${DOMAIN}
       S3_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       S3_SECRET_KEY: ${MINIO_SECRET_KEY}
       S3_BUCKET: snapmap
+      S3_REGION: us-east-1
       SNAP_MAP_BOT_TOKEN: ${SNAP_MAP_BOT_TOKEN}
-    ports:
-      - "127.0.0.1:8090:8080"
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN}
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,15 +57,51 @@ services:
       minio:
         condition: service_started
 
+  # ── Python-воркер: ИИ-проверка фото (OpenRouter) ─────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: workers/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DATABASE: 0
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBIT_USER: ${RABBIT_USER}
+      RABBIT_PASS: ${RABBIT_PASS}
+      RABBITMQ_ROUTING_KEY: moderation.tasks
+      # Воркер ходит в S3 изнутри docker-сети — приватным адресом (path-style).
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      S3_SECRET_KEY: ${MINIO_SECRET_KEY}
+      S3_REGION: us-east-1
+      VERIFIER_BACKEND: openrouter
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openai/gpt-4o-mini}
+      VERIFICATION_THRESHOLD: ${VERIFICATION_THRESHOLD:-0.55}
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+
+  # ── React (CRA) за nginx ─────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend/snap
       args:
+        # Вшивается в бандл на сборке. Фронт ходит на тот же домен (/api/*).
         REACT_APP_API_URL: https://${DOMAIN}
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:3000:80"
+    depends_on:
+      - backend
 
+  # ── Инфраструктура ───────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -61,12 +120,12 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --save 60 1 --loglevel warning
     volumes:
       - redis_data:/data
 
   rabbitmq:
-    image: rabbitmq:3-alpine
+    image: rabbitmq:3-management-alpine
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
@@ -89,8 +148,24 @@ services:
     volumes:
       - minio_data:/data
 
+  # Одноразовый init: создаёт бакет snapmap и открывает его на чтение (лента/раздача фото).
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}; do echo 'waiting for minio...'; sleep 2; done &&
+      mc mb -p local/snapmap || true &&
+      mc anonymous set download local/snapmap || true &&
+      echo 'MinIO initialized'
+      "
+
 volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
   minio_data:
+  caddy_data:
+  caddy_config:
