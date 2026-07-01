@@ -51,6 +51,47 @@ const parseInitData = (initDataRaw: string): User | null => {
   }
 };
 
+// Мок разрешён только для локальной разработки: включается флагом
+// REACT_APP_ALLOW_MOCK_AUTH=1 (в прод-сборке НЕ задаётся).
+const MOCK_AUTH_ALLOWED = process.env.REACT_APP_ALLOW_MOCK_AUTH === '1';
+
+// initData, у которого hash=mock_hash — это наш мок; настоящий Telegram
+// такого не пришлёт. Нужно, чтобы залипший в localStorage мок не подменял
+// реальные данные из Telegram.
+const isMockInitData = (raw: string | null): boolean =>
+  !!raw && /(?:^|&)hash=mock_hash(?:&|$)/.test(raw);
+
+/**
+ * Достаём настоящую initData из Telegram. Порядок:
+ *   1) window.Telegram.WebApp.initData (классический webview-скрипт);
+ *   2) tgWebAppData из URL-хэша — сюда Telegram кладёт launch-параметры;
+ *   3) @telegram-apps/sdk retrieveLaunchParams() как запасной вариант.
+ */
+const getTelegramInitData = async (): Promise<string | null> => {
+  // 1. Классический объект (если подключён telegram-web-app.js)
+  const fromWebApp = (window as any)?.Telegram?.WebApp?.initData;
+  if (typeof fromWebApp === 'string' && fromWebApp.length > 0) return fromWebApp;
+
+  // 2. URL-хэш: #tgWebAppData=...
+  try {
+    const hash = window.location.hash.startsWith('#')
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const fromHash = new URLSearchParams(hash).get('tgWebAppData');
+    if (fromHash && fromHash.length > 0) return fromHash;
+  } catch {}
+
+  // 3. SDK
+  try {
+    const sdkModuleName = '@telegram-apps/sdk';
+    const { retrieveLaunchParams } = (await import(/* @vite-ignore */ sdkModuleName)) as any;
+    const lp = retrieveLaunchParams();
+    if (lp?.initDataRaw && typeof lp.initDataRaw === 'string') return lp.initDataRaw;
+  } catch {}
+
+  return null;
+};
+
 const getMockInitData = (): { user: User; initData: string } => {
   const mockId = 123456789;
   const user: User = {
@@ -81,35 +122,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const init = async () => {
       try {
-        let rawData: string | null = null;
+        // 1. Настоящая initData из Telegram (главный источник).
+        let rawData: string | null = await getTelegramInitData();
 
-        // 1. Пробуем Telegram SDK
-        try {
-          const sdkModuleName = '@telegram-apps/sdk';
-          const { retrieveLaunchParams } = await import(/* @vite-ignore */ sdkModuleName) as any;
-          const lp = retrieveLaunchParams();
-          if (lp?.initDataRaw && typeof lp.initDataRaw === 'string') {
-            rawData = lp.initDataRaw;
-          }
-        } catch {}
-
-        // 2. Fallback на localStorage
+        // 2. Fallback на localStorage — но НИКОГДА не подставляем залипший мок:
+        //    он не должен переопределять реальные данные Telegram.
         if (!rawData) {
-          rawData = localStorage.getItem('initDataRaw');
+          const cached = localStorage.getItem('initDataRaw');
+          if (cached && !isMockInitData(cached)) {
+            rawData = cached;
+          }
         }
 
-        // 3. Fallback на моковые данные для локальной разработки
+        // 3. Мок — только для локальной разработки (по флагу), в проде отключён.
         if (!rawData) {
-          const mock = getMockInitData();
-          rawData = mock.initData;
-          setUser(mock.user);
+          if (MOCK_AUTH_ALLOWED) {
+            const mock = getMockInitData();
+            rawData = mock.initData;
+            setUser(mock.user);
+          } else {
+            // Открыто вне Telegram и без валидной initData — не авторизуемся.
+            setIsLoading(false);
+            return;
+          }
         } else {
           const parsed = parseInitData(rawData);
           if (parsed) setUser(parsed);
         }
 
         setInitDataRaw(rawData);
-        localStorage.setItem('initDataRaw', rawData);
+        // Кэшируем только настоящую initData, мок в localStorage не пишем.
+        if (!isMockInitData(rawData)) {
+          localStorage.setItem('initDataRaw', rawData);
+        }
 
         // 4. Запрашиваем бэкенд — если недоступен, смотрим localStorage
         try {
