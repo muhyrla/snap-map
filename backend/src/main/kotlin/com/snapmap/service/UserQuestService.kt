@@ -26,6 +26,7 @@ class UserQuestService(
         val description: String?,
         val difficulty: Int?,
         val reward: Int,
+        val expectedLabel: String?,
         val isCompleted: Boolean,
         val isSkipped: Boolean
     )
@@ -53,6 +54,7 @@ class UserQuestService(
                 description = q.description,
                 difficulty  = q.difficulty,
                 reward      = q.reward?.toInt() ?: 0,
+                expectedLabel = q.metadata,
                 isCompleted = q.id in completedIds,
                 isSkipped   = q.id in skippedIds
             )
@@ -73,6 +75,7 @@ class UserQuestService(
             description = quest.description,
             difficulty  = quest.difficulty,
             reward      = quest.reward?.toInt() ?: 0,
+            expectedLabel = quest.metadata,
             isCompleted = userQuestRepository.existsByUserIdAndQuestIdAndStatus(userId, questId, UserQuestStatus.COMPLETED),
             isSkipped   = userQuestRepository.existsByUserIdAndQuestIdAndStatus(userId, questId, UserQuestStatus.SKIPPED)
         )
@@ -131,6 +134,7 @@ class UserQuestService(
             description = next.description,
             difficulty  = next.difficulty,
             reward      = next.reward?.toInt() ?: 0,
+            expectedLabel = next.metadata,
             isCompleted = false,
             isSkipped   = false
         )

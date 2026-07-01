@@ -1,33 +1,18 @@
-export interface FeedPost {
-  id: string;
-  username: string;
-  tag?: string;
-  text?: string;
-  imageUrl?: string;
+import { FeedPost, feedPosts as feedMock } from '../data';
+
+const API_BASE = process.env.REACT_APP_API_URL ?? '';
+
+/**
+ * Загружает ленту подтверждённых снимков с бэкенда.
+ * При ошибке/пустом ответе возвращает мок из data.ts, чтобы экран не был пустым.
+ */
+export async function getFeed(limit = 30): Promise<FeedPost[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/feed?limit=${limit}`);
+    if (!res.ok) throw new Error('Failed to fetch feed');
+    const data: FeedPost[] = await res.json();
+    return data.length > 0 ? data : feedMock;
+  } catch {
+    return feedMock;
+  }
 }
-
-// Моки данных ленты
-const FEED_MOCK: FeedPost[] = [
-  {
-    id: '1',
-    username: 'Пользователь',
-    tag: 'Синий цветок',
-    text: 'Описание пызыщдадывазд выывадываывыждадывадывыжыж адлыыжвал',
-    imageUrl: '/posti/post1.jpeg',
-  },
-  {
-    id: '2',
-    username: 'Пользователь',
-    tag: 'Красный цветок',
-    text: 'Ещё один тестовый пост для ленты.',
-    imageUrl: '/posti/post2.jpeg',
-  },
-];
-
-export async function getFeed(): Promise<FeedPost[]> {
-  // const response = await fetch('/api/feed');
-  // return response.json();
-  
-  return Promise.resolve(FEED_MOCK);
-}
-

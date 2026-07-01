@@ -22,6 +22,15 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:}
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    template:
+      routing-key: ${RABBITMQ_ROUTING_KEY:moderation.tasks}
+      exchange: ${RABBITMQ_EXCHANGE:moderation.exchange}
+
 server:
   port: 8080
   servlet:
@@ -33,6 +42,10 @@ logging:
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
 
+cors:
+  # Список разрешённых origin через запятую. В проде задаётся через CORS_ALLOWED_ORIGINS.
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
 telegram:
   bot-token: ${SNAP_MAP_BOT_TOKEN:}
 
@@ -42,15 +55,8 @@ s3:
   accessKey: ${S3_ACCESS_KEY:minioadmin}
   secretKey: ${S3_SECRET_KEY:minioadmin}
   bucket: ${S3_BUCKET:snapmap}
-
-  rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBIT_USER:guest}
-    password: ${RABBIT_PASS:guest}
-    template:
-      routing-key: ${RABBITMQ_ROUTING_KEY:moderation.tasks}
-      exchange: ${RABBITMQ_EXCHANGE:moderation.exchange}
+  # Публичный базовый URL для отображения загруженных фото (лента). По умолчанию = endpoint.
+  publicEndpoint: ${S3_PUBLIC_ENDPOINT:}
 
 redis:
   # Railway даёт REDISHOST/REDISPORT/REDISPASSWORD

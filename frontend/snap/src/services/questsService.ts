@@ -12,6 +12,7 @@ export interface QuestDto {
   description: string | null;
   difficulty: number | null;
   reward: number;
+  expectedLabel: string | null;
   isCompleted: boolean;
   isSkipped: boolean;
 }

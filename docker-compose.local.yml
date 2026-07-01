@@ -3,6 +3,7 @@ services:
   backend:
     build:
       context: ./backend
+      network: host
     ports:
       - "8080:8080"
     environment:
@@ -32,10 +33,49 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      minio-init:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: .
+      dockerfile: workers/Dockerfile
+      network: host
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_DATABASE: 0
+      REDIS_STATUS_KEY_PREFIX: moderation:status
+      REDIS_RESULT_KEY_PREFIX: moderation:result
+      REDIS_EVENTS_TOPIC: moderation:events
+      REDIS_TASK_TTL_SECONDS: 86400
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBIT_USER: guest
+      RABBIT_PASS: guest
+      RABBITMQ_ROUTING_KEY: moderation.tasks
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_REGION: us-east-1
+      VERIFICATION_THRESHOLD: "0.55"
+      # Верификация через внешнее vision-API (OpenRouter)
+      VERIFIER_BACKEND: openrouter
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openai/gpt-4o-mini}
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
 
   frontend:
     build:
       context: ./frontend/snap
+      network: host
       args:
         REACT_APP_API_URL: http://localhost:8080
     ports:
@@ -87,6 +127,20 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - minio_local:/data
+
+  # Создаёт бакет и делает его публично читаемым (для загрузки фото и ленты)
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do echo 'waiting for minio...'; sleep 2; done &&
+      mc mb -p local/snapmap || true &&
+      mc anonymous set download local/snapmap || true &&
+      echo 'MinIO initialized'
+      "
 
 volumes:
   postgres_local:

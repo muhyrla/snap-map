@@ -5,14 +5,14 @@ import FeedScreen from './pages/FeedScreen';
 import { QuestsListScreen, QuestDetailScreen } from './pages/QuestsScreen';
 import LeaderboardScreen from './pages/Leaderboard';
 import MarketScreen from './pages/MarketScreen';
+import SnapFlow from './pages/SnapFlow';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
 import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
 import { getStats, StatsResponse } from './services/statsService';
+import { getFeed } from './services/feedService';
 import { QuestDto, skipQuest, rerollQuest, getRerolls } from './services/questsService';
 import { ShopItemDto, PurchaseDto } from './services/shopService';
 import './styles/style.scss';
-
-const RankPlaceholder   = () => <div className="scroll"><div className="page-pad" style={{ color: 'var(--gray)', paddingTop: 40, textAlign: 'center' }}>Рейтинг — в разработке</div></div>;
 
 export default function App() {
   const { isLoading, onboarded, backendUser, initDataRaw } = useAuth();
@@ -28,6 +28,8 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [questDetail, setQuestDetail] = useState<QuestDto | null>(null);
   const [rerollsLeft, setRerollsLeft] = useState(3);
+  const [snapQuest, setSnapQuest] = useState<QuestDto | null>(null);
+  const [questsVersion, setQuestsVersion] = useState(0);
 
   useEffect(() => {
     localStorage.setItem('snapmap_user', JSON.stringify(user));
@@ -52,6 +54,13 @@ export default function App() {
     getRerolls(initDataRaw).then(r => setRerollsLeft(r.rerollsLeft)).catch(() => {});
   }, [initDataRaw, onboarded]);
 
+  // Лента с бэкенда
+  const loadFeed = useCallback(() => {
+    getFeed().then(setPosts).catch(() => {});
+  }, []);
+
+  useEffect(() => { loadFeed(); }, [loadFeed]);
+
   const handleReroll = useCallback(async (q: QuestDto): Promise<QuestDto | null> => {
     if (!initDataRaw) return null;
     try {
@@ -75,6 +84,19 @@ export default function App() {
     setTimeout(() => setToast(null), 2400);
   };
 
+  const handleSnapSuccess = useCallback((q: QuestDto) => {
+    setSnapQuest(null);
+    setQuestDetail(null);
+    showToast(`Квест «${q.name}» засчитан! +${q.reward}`);
+    // Обновляем баланс сразу (оптимистично) и подтягиваем статы/квесты с бэка
+    setUser(u => ({ ...u, balance: u.balance + q.reward }));
+    setQuestsVersion(v => v + 1);
+    if (initDataRaw) {
+      getStats(initDataRaw).then(setStats).catch(() => {});
+    }
+    loadFeed();
+  }, [initDataRaw, loadFeed]); // eslint-disable-line
+
   const unreadCount = notifs.filter(n => !n.read).length;
   const dailyProgress = Math.min(1, (user.dailyDone || 0) / (user.dailyTotal || 4));
 
@@ -87,7 +109,12 @@ export default function App() {
 
   const handleTabChange = (id: TabId) => {
     if (id === 'snap') {
-      showToast('Камера — в разработке');
+      // Центральная кнопка: если открыт квест — снимаем его, иначе ведём на список квестов
+      if (questDetail) {
+        setSnapQuest(questDetail);
+      } else {
+        setTab('quests');
+      }
       return;
     }
     setTab(id);
@@ -103,7 +130,7 @@ export default function App() {
             dailyCount={stats ? Number(stats.daily_count) : user.dailyCount}
             posts={posts}
             onLike={handleLike}
-            onRefresh={() => showToast('Лента обновлена')}
+            onRefresh={() => { loadFeed(); showToast('Лента обновлена'); }}
           />
         );
       case 'rank':   return <LeaderboardScreen/>;
@@ -114,12 +141,13 @@ export default function App() {
             rerollsLeft={rerollsLeft}
             initData={initDataRaw}
             onBack={() => setQuestDetail(null)}
-            onShoot={() => showToast('Камера — в разработке')}
+            onShoot={(q) => setSnapQuest(q)}
             onReroll={handleReroll}
             onSkip={handleSkip}
           />
         ) : (
           <QuestsListScreen
+            key={questsVersion}
             initData={initDataRaw}
             dailyDone={stats?.daily_done ? Number(stats.daily_done) : user.dailyDone}
             dailyTotal={stats?.daily_total ?? user.dailyTotal}
@@ -157,6 +185,14 @@ export default function App() {
         {renderScreen()}
         {toast && <Toast text={toast}/>}
       </div>
+      {snapQuest && (
+        <SnapFlow
+          quest={snapQuest}
+          initData={initDataRaw}
+          onClose={() => setSnapQuest(null)}
+          onSuccess={handleSnapSuccess}
+        />
+      )}
       <BottomNav
         active={tab}
         onChange={handleTabChange}

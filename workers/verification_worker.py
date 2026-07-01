@@ -12,18 +12,25 @@ import pika
 
 import sys
 
-# Добавляем корень проекта в PYTHONPATH, чтобы можно было импортировать llm.zero_shot
+# Добавляем корень проекта в PYTHONPATH, чтобы можно было импортировать llm.*
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
 	sys.path.insert(0, str(PROJECT_ROOT))
 
-from llm.zero_shot import probability_of
+# Бэкенд верификации: "openrouter" (внешнее vision-API) или "clip" (локальная модель).
+VERIFIER_BACKEND = os.getenv("VERIFIER_BACKEND", "openrouter").lower()
+
+if VERIFIER_BACKEND == "clip":
+	from llm.zero_shot import probability_of
+else:
+	from llm.openrouter import probability_of
 
 logging.basicConfig(
 	level=logging.INFO,
 	format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger("verification_worker")
+logger.info("Verifier backend: %s", VERIFIER_BACKEND)
 
 
 def env(name: str, default: Optional[str] = None) -> str:

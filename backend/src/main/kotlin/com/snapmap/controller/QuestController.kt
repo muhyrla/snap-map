@@ -100,9 +100,9 @@ class QuestController(
         return if (parts.size == 2 && parts[0].equals("tma", ignoreCase = true)) parts[1] else null
     }
 
-    private fun unauthorized(msg: String? = null) =
+    private fun unauthorized(msg: String? = null): ResponseEntity<Any> =
         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("error" to (msg ?: "Unauthorized")))
 
-    private fun serverError(msg: String?) =
+    private fun serverError(msg: String?): ResponseEntity<Any> =
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mapOf("error" to "Internal server error: $msg"))
 }

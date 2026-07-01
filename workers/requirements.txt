@@ -1,6 +1,9 @@
--r ../llm/requirements.txt
+# Базовые зависимости воркера (бэкенд verifier = openrouter, лёгкий).
 redis>=5.0.0
 pika>=1.3.2
 boto3>=1.34.0
 botocore>=1.34.0
+requests>=2.31.0
 
+# Для локальной CLIP-модели (VERIFIER_BACKEND=clip) доустановите:
+#   pip install -r ../llm/requirements.txt

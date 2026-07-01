@@ -18,7 +18,18 @@ class StorageService(
 	private val s3Client: S3Client,
 	private val s3Presigner: S3Presigner,
 	@Value("\${s3.bucket}") private val bucket: String,
+	@Value("\${s3.endpoint}") private val endpoint: String,
+	@Value("\${s3.publicEndpoint:}") private val publicEndpoint: String,
 ) {
+
+	/**
+	 * Публичный URL объекта для отображения (лента, галерея).
+	 * Path-style: {endpoint}/{bucket}/{objectKey}. Требует публичного read-доступа к бакету.
+	 */
+	fun publicUrl(objectKey: String): String {
+		val base = (if (publicEndpoint.isNotBlank()) publicEndpoint else endpoint).trimEnd('/')
+		return "$base/$bucket/$objectKey"
+	}
 
 	fun generateUploadUrl(objectKey: String, contentType: String?, expiresInSeconds: Long = 600): URL {
 		val putObjectRequestBuilder = PutObjectRequest.builder()

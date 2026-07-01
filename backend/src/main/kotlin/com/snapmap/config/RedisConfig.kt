@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.redis.listener.RedisMessageListenerContainer
 
 @Configuration
 class RedisConfig(
@@ -30,6 +31,15 @@ class RedisConfig(
 	@Bean
 	fun stringRedisTemplate(connectionFactory: RedisConnectionFactory): StringRedisTemplate =
 		StringRedisTemplate(connectionFactory)
+
+	@Bean
+	fun redisMessageListenerContainer(
+		connectionFactory: RedisConnectionFactory
+	): RedisMessageListenerContainer {
+		val container = RedisMessageListenerContainer()
+		container.setConnectionFactory(connectionFactory)
+		return container
+	}
 }
 
 

@@ -106,6 +106,7 @@ export const QuestsListScreen: React.FC<ListProps> = ({ initData, dailyDone, dai
         const mock = mockQuests[t].map((q, i) => ({
           id: i + 1, name: q.title, type: t, emoji: q.emoji,
           description: q.desc, difficulty: null, reward: q.reward,
+          expectedLabel: null,
           isCompleted: false, isSkipped: false,
         } as QuestDto));
         setQuestMap(m => ({ ...m, [t]: mock }));
