@@ -8,7 +8,7 @@ import MarketScreen from './pages/MarketScreen';
 import AdminScreen from './pages/AdminScreen';
 import SnapFlow from './pages/SnapFlow';
 import { Header, BottomNav, Toast, TabId } from './components/Shell';
-import { AppUser, defaultUser, notifications as initNotifs, feedPosts as initPosts, Notification, FeedPost } from './data';
+import { AppUser, defaultUser, notifications as initNotifs, Notification, FeedPost } from './data';
 import { getStats, StatsResponse } from './services/statsService';
 import { getFeed } from './services/feedService';
 import { QuestDto, skipQuest, rerollQuest, getRerolls } from './services/questsService';
@@ -24,7 +24,9 @@ export default function App() {
   });
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [tab, setTab] = useState<TabId>('feed');
-  const [posts, setPosts] = useState<FeedPost[]>(initPosts);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [feedError, setFeedError] = useState(false);
+  const [feedLoading, setFeedLoading] = useState(true);
   const [notifs, setNotifs] = useState<Notification[]>(initNotifs);
   const [toast, setToast] = useState<string | null>(null);
   const [questDetail, setQuestDetail] = useState<QuestDto | null>(null);
@@ -60,7 +62,11 @@ export default function App() {
 
   // Лента с бэкенда
   const loadFeed = useCallback(() => {
-    getFeed().then(setPosts).catch(() => {});
+    setFeedLoading(true);
+    getFeed()
+      .then(p => { setPosts(p); setFeedError(false); })
+      .catch(() => { setFeedError(true); })
+      .finally(() => setFeedLoading(false));
   }, []);
 
   useEffect(() => { loadFeed(); }, [loadFeed]);
@@ -134,6 +140,8 @@ export default function App() {
             questsDone={stats ? Number(stats.quests_done) : user.questsDone}
             dailyCount={stats ? Number(stats.daily_count) : user.dailyCount}
             posts={posts}
+            loading={feedLoading}
+            error={feedError}
             onLike={handleLike}
             onRefresh={() => { loadFeed(); showToast('Лента обновлена'); }}
           />

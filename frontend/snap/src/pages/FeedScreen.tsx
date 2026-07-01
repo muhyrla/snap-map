@@ -92,22 +92,18 @@ interface FeedScreenProps {
   questsDone: number;
   dailyCount: number;
   posts: FeedPostType[];
+  loading?: boolean;
+  error?: boolean;
   onLike: (id: number) => void;
   onRefresh?: () => void;
 }
 
-const FeedScreen: React.FC<FeedScreenProps> = ({ streak, questsDone, dailyCount, posts, onLike, onRefresh }) => {
-  const [loading, setLoading] = useState(true);
+const FeedScreen: React.FC<FeedScreenProps> = ({ streak, questsDone, dailyCount, posts, loading = false, error = false, onLike, onRefresh }) => {
   const [pulling, setPulling] = useState(false);
   const [pullDist, setPullDist] = useState(0);
   const startY = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const countdown = useMidnightCountdown();
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 900);
-    return () => clearTimeout(t);
-  }, []);
 
   const onTouchStart = (e: React.TouchEvent) => {
     if (scrollRef.current && scrollRef.current.scrollTop === 0) {
@@ -183,10 +179,22 @@ const FeedScreen: React.FC<FeedScreenProps> = ({ streak, questsDone, dailyCount,
         </div>
 
         {/* Posts */}
-        {loading
-          ? <><FeedSkeleton/><FeedSkeleton/><FeedSkeleton/></>
-          : posts.map(p => <FeedPost key={p.id} post={p} onLike={onLike}/>)
-        }
+        {loading ? (
+          <><FeedSkeleton/><FeedSkeleton/><FeedSkeleton/></>
+        ) : error ? (
+          <div className="center" style={{ flexDirection: 'column', gap: 8, padding: '48px 0', color: 'var(--gray)' }}>
+            <div style={{ fontSize: 40 }}>⚠️</div>
+            <div style={{ fontWeight: 600, color: 'var(--dark)' }}>Произошла ошибка</div>
+            {onRefresh && <button className="btn sm outlined" style={{ marginTop: 6 }} onClick={onRefresh}>Повторить</button>}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="center" style={{ flexDirection: 'column', gap: 8, padding: '48px 0', color: 'var(--gray)' }}>
+            <div style={{ fontSize: 40 }}>📭</div>
+            <div style={{ fontWeight: 600, color: 'var(--dark)' }}>Постов пока нет</div>
+          </div>
+        ) : (
+          posts.map(p => <FeedPost key={p.id} post={p} onLike={onLike}/>)
+        )}
       </div>
     </div>
   );

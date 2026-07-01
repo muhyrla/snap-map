@@ -43,6 +43,9 @@ class S3Config(
 			.endpointOverride(URI.create(endpoint))
 			.region(Region.of(region))
 			.credentialsProvider(credentialsProvider())
+			// Path-style обязателен: без него presigned-URL уходит в virtual-hosted
+			// стиль (<bucket>.s3.domain), который DNS не резолвит.
+			.serviceConfiguration(s3CommonConfig())
 			.build()
 }
 
