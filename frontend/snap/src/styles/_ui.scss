@@ -96,10 +96,10 @@
 .bottom-nav.floating {
   position: absolute; left: 14px; right: 14px; bottom: 14px;
   border-radius: 30px; padding: 12px 8px 14px;
-  background: rgba(255,255,255,0.7);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.6) inset, 0 12px 36px rgba(48,52,63,0.18), 0 2px 6px rgba(48,52,63,0.08);
+  /* Непрозрачный фон без backdrop-filter: blur выносит панель в отдельный
+     композитный слой, и в iOS/Telegram WebView она рисуется поверх шторок (z-30) */
+  background: var(--white);
+  box-shadow: 0 0 0 1px rgba(48,52,63,0.06), 0 12px 36px rgba(48,52,63,0.18), 0 2px 6px rgba(48,52,63,0.08);
   z-index: 20;
   .nav-tab { padding: 8px 4px 4px; border-radius: 18px; position: relative; transition: background .2s ease; }
   .nav-tab.active:not(.center) { background: rgba(0,122,255,0.10); }

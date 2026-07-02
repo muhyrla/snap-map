@@ -208,33 +208,35 @@ const MarketScreen: React.FC<MarketScreenProps> = ({ balance, initData, onPurcha
   };
 
   return (
-    <div className="scroll">
-      <div className="page-pad">
-        <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
-          <div className="h1">Маркет</div>
-          <button className="btn sm outlined" onClick={() => setShowHistory(true)}>Мои покупки</button>
-        </div>
-        <div className="muted" style={{ marginBottom: 14 }}>Обменивай снэпы на скидки, услуги и цифровые коды</div>
-
-        {/* Баланс */}
-        <div className="card pad" style={{ marginBottom: 14, background: 'linear-gradient(135deg,var(--blue) 0%,#005bb5 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(0,122,255,0.3)' }}>
-          <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4, fontWeight: 500 }}>Ваш баланс</div>
-          <div className="row" style={{ gap: 6, alignItems: 'baseline' }}>
-            <IconBolt size={20} style={{ color: '#FFD60A' }}/>
-            <AnimatedNumber value={currentBalance} className="big-num" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, color: '#fff' }}/>
+    <>
+      <div className="scroll">
+        <div className="page-pad">
+          <div className="row" style={{ justifyContent: 'space-between', marginBottom: 6 }}>
+            <div className="h1">Маркет</div>
+            <button className="btn sm outlined" onClick={() => setShowHistory(true)}>Мои покупки</button>
           </div>
-        </div>
+          <div className="muted" style={{ marginBottom: 14 }}>Обменивай снэпы на скидки, услуги и цифровые коды</div>
 
-        {/* Фильтры */}
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginLeft: -16, marginRight: -16, padding: '2px 16px 12px' }}>
-          {CATEGORIES.map(f => (
-            <button key={f} className={`pill${filter === f ? ' active' : ''}`} onClick={() => setFilter(f)} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>{f}</button>
-          ))}
-        </div>
+          {/* Баланс */}
+          <div className="card pad" style={{ marginBottom: 14, background: 'linear-gradient(135deg,var(--blue) 0%,#005bb5 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(0,122,255,0.3)' }}>
+            <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4, fontWeight: 500 }}>Ваш баланс</div>
+            <div className="row" style={{ gap: 6, alignItems: 'baseline' }}>
+              <IconBolt size={20} style={{ color: '#FFD60A' }}/>
+              <AnimatedNumber value={currentBalance} className="big-num" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, color: '#fff' }}/>
+            </div>
+          </div>
 
-        {/* Сетка */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {items.map(item => <MarketCard key={item.id} item={item} onOpen={setDetail}/>)}
+          {/* Фильтры */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginLeft: -16, marginRight: -16, padding: '2px 16px 12px' }}>
+            {CATEGORIES.map(f => (
+              <button key={f} className={`pill${filter === f ? ' active' : ''}`} onClick={() => setFilter(f)} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>{f}</button>
+            ))}
+          </div>
+
+          {/* Сетка */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {items.map(item => <MarketCard key={item.id} item={item} onOpen={setDetail}/>)}
+          </div>
         </div>
       </div>
 
@@ -250,7 +252,7 @@ const MarketScreen: React.FC<MarketScreenProps> = ({ balance, initData, onPurcha
       {showHistory && (
         <PurchaseHistory initData={initData} onClose={() => setShowHistory(false)}/>
       )}
-    </div>
+    </>
   );
 };
 
